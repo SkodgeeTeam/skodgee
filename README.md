@@ -1,7 +1,7 @@
 # SKodgee 
 SKodgee Obviously Designed for Generation Enhanced Efficiently
 
-[Consulter la version française](/READLE.fr.md)
+[Consulter la version française](/README.fr.md)
 
 ## What it is
 
