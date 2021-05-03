@@ -11,12 +11,12 @@ applying directives that use structured data provided by the user.
 
 ## How it works
 
-Three possibilities for the user:
+Three possibilities for the user:  
 [1] - Launch SKodgee to generate a new document by choosing one of the skeletons
- then filling in the requested structured data.
+ then filling in the requested structured data.  
 [2] - Ask Skodgee to start from a document to identify the skeleton,
 retrieve the values of the generation data and automatically propose to redo a new generation in the interface
-generation in the interface described in point [1].
+generation in the interface described in point [1].  
 [3] - Develop a skeleton by generating the generation interface starting from the skeleton under development.
 the skeleton under development.
 
