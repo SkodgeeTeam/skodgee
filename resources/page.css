@@ -26,6 +26,9 @@ div {
     display: flex;
     height: 100%;
 }
+#selection {
+    margin-top: 0.5em;
+}
 #formulaireContainer {
     flex-grow: 1;
     height: 100%;
@@ -53,7 +56,7 @@ div {
     resize: none;
 }
 #formulaire {
-    margin: 1em 1em 1em 0;
+    margin: 0 1em 1em 0;
     padding: 1em 1px 1em 3em;
     width: max-content;
     min-width: 20em;

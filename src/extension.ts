@@ -105,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 
 		panel.webview.html = page.toString()
-		.replace('<h1 id="title"></h1>',`<h1>${info.displayName} <quote>(version ${info.version})</quote></h1><cite>${info.description}</cite><br/><br/>`)
+		.replace('<h1 id="title"></h1>',`<h1>${info.displayName} <quote>(version ${info.version})</quote></h1><cite>${info.description}</cite>`)
 		.replace('<script id="pageJs"></script>',`<script>${pageJs.toString()}</script>`)
 		.replace('<style id="pageCss"></style>',`<style>${pageCss.toString()}</style>`)
 
