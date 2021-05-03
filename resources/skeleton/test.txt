@@ -1,0 +1,18 @@
+You can inject this generated result
+because it is include a dictionnary directive
+but do not modify the next lines between stars lines.
+
+**************************************************
+000050004{"sn":"dictionnary.skl","dt":"2021-05-02T
+20:36:10.745Z","data":"'A':'A1','B':'B2','C':'C3',
+'G1[0]>D':'D4','G1[0]>E':'E5','G1[1]>D':'D6','G1[1
+]>E':'E7'"}                                       
+**************************************************
+
+The dictionnary contains the skeleton name and values
+for each used data to revert the process.
+
+Activate the command from the palette
+'SKoDGee - reverse from generated to dictionnary'
+to process, then modify data and generate again.
+

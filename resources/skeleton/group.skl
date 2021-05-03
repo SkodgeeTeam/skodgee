@@ -1,0 +1,47 @@
+# skodgee
+    { 
+        "name": "Groups",
+        "description": "Nested group skeleton",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "A", "lib":"variable A" },
+    { 
+        "grp": "G1", 
+        "lib":"group G1",
+        "cmp": [
+            { "var":"B", "lib":"variable B" },
+            { "var":"C", "lib":"variable C" },
+            { 
+                "grp": "SG1",
+                "lib":"sub-group SG1",
+                "rpt":"0,5",
+                "cmp": [
+                    { "var":"D", "lib":"variable D" },
+                    { "var":"E", "lib":"variable E" }
+                ]
+            }
+        ] 
+    } 
+# end
+SKoDGee sample
+
+A = {{A}}
+B = {{G1_B}}
+C = {{G1_C}}
+
+group G1 contains {{G1_SG1__n}} sub-group SG1
+
+# for {{G1_SG1}}
+in the {{G1_SG1__i}}° sub-group there are :
+
+  D = {{G1_SG1_D}}
+  E = {{G1_SG1_E}}
+
+# endfor
+
+# dictionnary dense
+_______________________________________________________________________________

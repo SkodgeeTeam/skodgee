@@ -1,0 +1,66 @@
+{
+  "name": "skodgee",
+  "displayName": "SKODGEE",
+  "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
+  "publisher": "herve.heritier",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.46.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:skodgee.generation",
+    "onCommand:skodgee.inject",
+    "onCommand:skodgee.develop"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "skodgee.generation",
+        "title": "SKodgee - generation based on skeleton"
+      },
+      {
+        "command": "skodgee.inject",
+        "title": "SKodgee - reverse from generated with dictionnary"
+      },
+      {
+        "command": "skodgee.develop",
+        "title": "SKodgee - test my skeleton"
+      }
+    ],
+    "configuration": {
+      "title": "SKodgee",
+      "properties": {
+        "skodgee.skeletonLocation": {
+          "type": "string",
+          "scope": "resource",
+          "description": "skeleton path"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.3",
+    "@types/mocha": "^8.0.0",
+    "@types/node": "^12.11.7",
+    "@types/vscode": "^1.46.0",
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
+    "eslint": "^7.9.0",
+    "glob": "^7.1.6",
+    "mocha": "^8.1.3",
+    "typescript": "^4.0.2",
+    "vscode-test": "^1.4.0"
+  }
+}

@@ -1,0 +1,18 @@
+# skodgee
+    { 
+        "name": "Repeat",
+        "description": "Nested repeat skeleton",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var":"A", "lib":"variable A" },
+    { "var":"B", "lib":"variable B" }
+# end
+# repeat {{A}}
+#   repeat {{B}}
+repetition {{_ri[0]}} dans {{_ri[1]}}
+#   endrepeat
+# endrepeat

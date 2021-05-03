@@ -1,0 +1,138 @@
+#################################################################
+## Iro
+################################################################ 
+##
+## * Press Ctrl + '+'/'-' To Zoom in
+## * Press Ctrl + S to save and recalculate... 
+## * Documents are saved to web storage.
+## * Only one save slot supported.
+## * Matches cannot span lines.
+## * Unicode chars must be defined in \u0000 to \uffff format.
+## * All matches must be contained by a single group ( ... )
+## * Look behinds not permitted, (?<= or (?<!
+## * Look forwards are permitted (?= or (?!
+## * Constants are defined as __my_const = (......)
+## * The \= format allows unescaped regular expressions
+## * Constants referenced by match \= $${__my_const}
+## * Constants can reference other constants
+## * You are free to delete all the default scopes.
+## * Twitter : ainslec , Web: http://eeyo.io/iro
+##
+################################################################
+
+name                   = mysample
+file_extensions []     = mysample;
+
+styles [] {
+
+   .keyword : style 
+      color                 = "green"
+      textmate_scope        = "keyword"
+   ;
+   .variable : style 
+      color                 = "yellow"
+      textmate_scope        = "variable"
+   ;
+   .comparaison : style 
+      color                 = "cyan"
+      textmate_scope        = "comparaison"
+   ;
+   .element : style 
+      color                 = "orange"
+      textmate_scope        = "element"
+   ;
+   .nostyle : style 
+      color                 = "white"
+      textmate_scope        = "nostyle"
+   ;
+   .sharp : style 
+      color                 = "red"
+      textmate_scope        = "sharp"
+   ;
+   .open_mustach : style 
+      color                 = "cyan"
+      textmate_scope        = "open_mustach"
+   ;
+   .close_mustach : style 
+      color                 = "cyan"
+      textmate_scope        = "close_mustach"
+   ;
+   .data : style 
+      color = "orange"
+      textmate_scope = "data"
+   ;
+}
+
+contexts [] {
+
+   main : context {
+
+      : inline_push {
+         regex          \=  (?:^(#)(\s*)(skodgee)(\s*))
+         styles []       = .sharp, .nostyle, .keyword, .nostyle;
+         : pop {
+            regex \= (?:^(#)(\s*)(end)(\s*)$)
+            styles [] = .sharp, .nostyle, .keyword, .nostyle;
+         }
+         : include "skodgee";
+      }      
+      : inline_push {
+         regex          \=  (?:^(#)(\s*)(declare)(\s*))
+         styles []       = .sharp, .nostyle, .keyword, .nostyle;
+         : pop {
+            regex \= (?:^(#)(\s*)(end)(\s*)$)
+            styles [] = .sharp, .nostyle, .keyword, .nostyle;
+         }
+         : include "main";
+      }      
+      : inline_push {
+         regex          \=  (?:^(#)(\s*)(for)(\s+)({{)(\w+)(}})(\s*))
+         styles []       = .sharp, .nostyle, .keyword, .nostyle, .open_mustach,  .variable, .close_mustach, .nostyle;
+         : pop {
+            regex \= (?:^(#)(\s*)(endfor)(\s*)$)
+            styles [] = .sharp, .nostyle, .keyword, .nostyle;
+         }
+         : include "main";
+      }
+      : inline_push {
+         regex          \=  (?:^(#\s*)(if)(\s+)({{)(\w+)(}})(\s+)(eq|EQ|==|=|le|LE|<=|ge|GE|>=|ne|NE|#|!=|<>|gt|GT|>|lt|LT|<)(\s+)(.*)(\s*)$)
+         styles []       = .sharp, .keyword, .nostyle, .open_mustach, .variable, .close_mustach, .nostyle, .comparaison, .nostyle, .element, .nostyle;
+         : pop {
+            regex       \= (?:^(#)(\s*)(endif)(\s*)$)
+            styles []    = .sharp, .nostyle, .keyword, .nostyle;
+         }
+         : include "main";
+      }
+      : pattern {
+         regex          \= (?:({{)(\w+)(}}))
+         styles []       = .open_mustach, .variable, .close_mustach;
+      }
+
+   }
+   
+   inskodgee : context {
+         : inline_push {
+            regex       \= ("name")
+            styles []    = .keyword;
+            default_style = .nostyle
+            : pop {
+               regex       \= ("\w+")
+               styles []    = .data;
+            }
+         }
+   }
+   
+   skodgee : context {
+      : inline_push {
+         regex          \= ({)
+         styles []       = .open_mustach;
+         : pop {
+            regex       \= (})
+            styles []    = .close_mustach;
+         }
+         : include "inskodgee";
+      }
+   }
+   
+
+}

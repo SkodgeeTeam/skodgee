@@ -1,0 +1,39 @@
+# skodgee
+    { 
+        "name": "Dictionnary",
+        "description": "Minimal skeleton",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "A", "lib": "variable A" },
+    { "var": "B", "lib": "variable B" },
+    { "var": "C", "lib": "variable C" },
+    {
+        "grp": "G1", 
+        "lib": "group G1",
+        "rpt": "0,3",
+        "cmp": [
+            { "var":"D", "lib":"variable D" },
+            { "var":"E", "lib":"variable E" }
+        ]
+    }
+# end
+You can inject this generated result
+because it is include a dictionnary directive
+but do not modify the next lines between stars lines.
+
+**************************************************
+# dictionnary dense
+__________________________________________________
+**************************************************
+
+The dictionnary contains the skeleton name and values
+for each used data to revert the process.
+
+Activate the command from the palette
+'SKoDGee - reverse from generated to dictionnary'
+to process, then modify data and generate again.
+
