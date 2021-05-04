@@ -512,7 +512,7 @@ function docWith(skeletonName:string,data:any):string {
 
 function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, path:string[], sourceIndex:number, skeletonName:string) {
     let search:any
-    while((search = RGXgenericVars.exec(line) !==null)) {
+    while((search = RGXgenericVars.exec(line)) !==null) {
         let variable = search[1]
         let ap = path.join('_')
         let variableWithPath = ap.concat(ap!==''?'_':'',search[1])
@@ -982,7 +982,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocation:string,skel
     // parcourir le dictionnaire
     let d = 0
     while(true) {
-        if(d<dictionnary.length) break
+        if(d>=dictionnary.length) break
         const definition = dictionnary[d]
         if(definition.hasOwnProperty('grp')) {
             if(definition.hasOwnProperty('include')) {
@@ -1015,7 +1015,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocation:string,skel
                             lines.push(e)
                         }  
                     })
-                    bodyLines = liens
+                    bodyLines = lines
                     // accumulation du squelette récupéré
                     accu += `\n\n${edwi.sourceBrut}`
                 }

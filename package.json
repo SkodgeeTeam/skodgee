@@ -2,8 +2,8 @@
   "name": "skodgee",
   "displayName": "SKODGEE",
   "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
-  "publisher": "herve.heritier",
-  "version": "0.0.1",
+  "publisher": "skodgeeTeam",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.46.0"
   },

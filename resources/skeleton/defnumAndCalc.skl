@@ -1,0 +1,21 @@
+# skodgee
+    { 
+        "name": "Defnum and Calc",
+        "description": "Compute with some vars",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var":"A", "lib":"variable A" },
+    { "var":"B", "lib":"variable B" }
+# end
+A = {{A}}
+B = {{B}}
+Define a C vars value to B
+# defnum C {{B}}
+C = {{__C}}
+Increment C with A
+# calc C {{__C}} + {{A}}
+The result is C = {{__C}}
