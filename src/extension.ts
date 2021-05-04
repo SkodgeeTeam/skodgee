@@ -7,7 +7,7 @@ let logBuffer:string = ''
 
 export async function activate(context: vscode.ExtensionContext) {
 
-	let info = vscode.extensions.getExtension('herve.heritier.skodgee')?.packageJSON
+	let info = vscode.extensions.getExtension('skodgeeTeam.skodgee')?.packageJSON
 
 	const page:Uint8Array = await vscode.workspace.fs.readFile(vscode.Uri.file(path.join(context.extensionPath,'resources','page.html')))
 	const pageJs:Uint8Array = await vscode.workspace.fs.readFile(vscode.Uri.file(path.join(context.extensionPath,'resources','page.js')))
@@ -19,65 +19,74 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		const configuration = vscode.workspace.getConfiguration('skodgee')
 
+		const localResourceRoots = []
+		localResourceRoots.push(vscode.Uri.file(path.join(context.extensionPath,'resources')))
+		configuration.skeletonLocations.forEach((sl:string)=>localResourceRoots.push(vscode.Uri.file(sl)))
+
 		const panel = vscode.window.createWebviewPanel(
 			`${info.name}`,
 			`${info.displayName}`,
 			vscode.ViewColumn.One,
 			{
 				enableScripts: true,
-				localResourceRoots: [
+				localResourceRoots: localResourceRoots,
+				/*localResourceRoots: [
 					vscode.Uri.file(path.join(context.extensionPath,'resources')),
 					vscode.Uri.file(configuration.skeletonLocation)
-				],
+				],*/
 				retainContextWhenHidden: true
 			}
 		)
 
 		if(developSkeletonText===undefined) {
 
-			vscode.workspace.fs.readDirectory(vscode.Uri.file(path.join(configuration.skeletonLocation)))
-			.then((rd: any[])=>{
-				rd.forEach((e)=>{
-					if(e[1]===1) {
-						vscode.workspace.fs.readFile(vscode.Uri.file(path.join(configuration.skeletonLocation,e[0])))
-						.then((buffer:Uint8Array)=>{
-							let r = buffer.slice(0,9).toString()
-							if(r==='# skodgee'||r.slice(0,8)==='# skodgee') {
-								let lines: any[] = []
-								let l = buffer.length
-								let bfb = 9
-								let bfe = 9
-								for(let i=bfb;i<l;i++) {
-									if(buffer[i]===0x0D||buffer[i]===0x0A) {
-										if(bfb<bfe) {
-											let line = buffer.slice(bfb,bfe).toString()
-											if(line[0]==='#') break
-											lines.push(line)
+			configuration.skeletonLocations.forEach((oneSkeletonLocation:string) => {
+			
+				vscode.workspace.fs.readDirectory(vscode.Uri.file(path.join(oneSkeletonLocation)))
+				.then((rd: any[])=>{
+					rd.forEach((e)=>{
+						if(e[1]===1 && e[0].slice(-4)==='.skl') {
+							vscode.workspace.fs.readFile(vscode.Uri.file(path.join(oneSkeletonLocation,e[0])))
+							.then((buffer:Uint8Array)=>{
+								let r = buffer.slice(0,9).toString()
+								if(r==='# skodgee'||r.slice(0,8)==='# skodgee') {
+									let lines: any[] = []
+									let l = buffer.length
+									let bfb = 9
+									let bfe = 9
+									for(let i=bfb;i<l;i++) {
+										if(buffer[i]===0x0D||buffer[i]===0x0A) {
+											if(bfb<bfe) {
+												let line = buffer.slice(bfb,bfe).toString()
+												if(line[0]==='#') break
+												lines.push(line)
+											}
+											bfb=i+1
 										}
-										bfb=i+1
+										bfe++
 									}
-									bfe++
+									let info = JSON.parse(lines.join(''))
+									info.fileName = e[0]
+									if(info.hidden===undefined) {
+										let sn = values!==undefined ? values.sn : undefined
+										panel.webview.postMessage({
+											command:'bindSkeleton',
+											data:info,
+											values:info.fileName===sn?JSON.parse(values.data):undefined
+										})
+									}
 								}
-								let info = JSON.parse(lines.join(''))
-								info.fileName = e[0]
-								if(info.hidden===undefined) {
-									let sn = values!==undefined ? values.sn : undefined
-									panel.webview.postMessage({
-										command:'bindSkeleton',
-										data:info,
-										values:info.fileName===sn?JSON.parse(values.data):undefined
-									})
-								}
-							}
-						},(reason)=>console.log(reason))
-					}
-				})
-			},(reason: any)=>console.log(reason))
+							},(reason)=>console.log(reason))
+						}
+					})
+				},(reason: any)=>console.log(reason))
+
+			})
 
 		} else {
 
 			try {
-				skeleton.extendDictionnaryWithIncludes(configuration.skeletonLocation,'???',undefined,developSkeletonText)
+				skeleton.extendDictionnaryWithIncludes(configuration.skeletonLocations,'???',undefined,developSkeletonText)
 				.then((resolvedValue)=>{
 					skeleton.resolveModels(resolvedValue.sourceLines.join('\n'))
 					.then((sourceAfterResolvedModels)=>{
@@ -109,13 +118,21 @@ export async function activate(context: vscode.ExtensionContext) {
 		.replace('<script id="pageJs"></script>',`<script>${pageJs.toString()}</script>`)
 		.replace('<style id="pageCss"></style>',`<style>${pageCss.toString()}</style>`)
 
+		panel.webview.postMessage({
+			command: "userMode",
+			userMode: configuration.userMode===true ? "developer" : "skeletonEditor"
+		})
+
 		panel.webview.onDidReceiveMessage(
 			message=>{
 				switch(message.command) {
 					case 'loadSkeleton':
 						{
 							try {
-								let value = { name:message.skeleton, location:configuration.skeletonLocation }
+								let value = { 
+									name:message.skeleton, 
+									location:configuration.skeletonLocations 
+								}
 								skeleton.extendDictionnaryWithIncludes(value.location,value.name)
 								.then((resolvedValue)=>{
 									let source = resolvedValue.sourceLines.join('\n')

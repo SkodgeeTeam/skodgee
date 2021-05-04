@@ -100,6 +100,32 @@ export async function loadFile(filePathName:string) {
 }
 
 /**
+ * Recherche la présence d'un fichier dans un liste de répertoires
+ * @param locations tableau d'emplacement de fichiers (liste de répertoires...)
+ * @param fileName  nom de fichier à retrouver dans les emplacements
+ * @returns premier path complet (location/fileName) existant ou undefined
+ */
+export async function getFirstFileFoundInMultipleLocations(locations:string[],fileName:string) {
+    let l = locations.length
+    for(let i=0;i<l;i++) {
+        let uri = vscode.Uri.file(path.join(locations[i],fileName))
+        let found:boolean=true
+        try {
+            await vscode.workspace.fs.stat(uri)
+        } catch(error) {
+            found = false
+        } finally {
+            if(found===true) {
+                return locations[i]
+            }
+        }
+    }
+    return undefined
+}
+
+
+
+/**
  * Découpage d'une chaine en un tableau de chaines de longueur fixe
  * @param s chaine à découper
  * @param l longueur de chaque chaine résultat du découpage

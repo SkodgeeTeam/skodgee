@@ -963,10 +963,11 @@ function numberLines(text:string) {
     return text.split('\n').map((v,i)=>`${f(i+1)} : ${v}`).join('\n')
 }
 
-export async function extendDictionnaryWithIncludes(skeletonLocation:string,skeletonName:string,liens:any[]=[],developSkeletonText=undefined) {
+export async function extendDictionnaryWithIncludes(skeletonLocations:string[],skeletonName:string,liens:any[]=[],developSkeletonText=undefined) {
     // déterminer si l'on est sur le squelette principal ou sur un squelette inclu
     let level0 = liens.length===0 ? true : false
     // lire le squelette
+    let skeletonLocation = await complement.getFirstFileFoundInMultipleLocations(skeletonLocations,skeletonName) as string
     let skeletonSourceText = (developSkeletonText===undefined ? (await complement.loadFile(path.join(skeletonLocation,skeletonName as string))).source.toString() : developSkeletonText) as string
     // accumulateur des squelettes pour l'aide à la mise au point
     let accu = `>>> ===========================================================\n`+
@@ -996,7 +997,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocation:string,skel
                         throw(`référence circualire détectée dans les include sur ${scr.with} dans [${scr?.details.toString()}]`)
                     }
                     // poursuivre l'exploration avec le nouveau squeltte inclu pour enrichir le dictionnaire
-                    let edwi = await extendDictionnaryWithIncludes(skeletonLocation,fileName,liens)
+                    let edwi = await extendDictionnaryWithIncludes(skeletonLocations,fileName,liens)
                     let dico:dictionnary = edwi.dictionnary
                     ;(definition as groupObject).cmp = [...dico]
                     // remplacer les includes correspondants par le suqlette encadré par les directives # path et # endpath

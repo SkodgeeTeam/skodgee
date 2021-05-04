@@ -4,6 +4,7 @@ console.log('***')
 
 var testMode = true //false
 var swapMode = 0
+var userMode = "developer"
 
 var dictionnary
 var dictionnaryValues = undefined
@@ -74,6 +75,9 @@ window.addEventListener('message', e => {
     switch(message.command) {
         case 'message':
             document.querySelector('#expansed').value = message.message
+            break
+        case 'userMode':
+            swapUserMode(message.userMode)
             break
         case 'loadSkeletonOnSuccess':
             loadedSkeletonName = message.name
@@ -541,3 +545,19 @@ resetVars = (encodeVarsSet=dictionnary) => {
     })
     return encodeVarsSet
 }
+
+swapUserMode = (askUserMode) => {
+    userMode = askUserMode
+    switch(userMode) {
+        case 'developer':
+            document.querySelector('#swap').style.setProperty('display','none')
+            document.querySelector('#skeleton').style.setProperty('display','none')
+            break
+        case 'skeletonEditor':
+            document.querySelector('#swap').style.removeProperty('display')
+            document.querySelector('#skeleton').style.removeProperty('display')
+            break
+    }
+}
+
+swapUserMode(userMode)

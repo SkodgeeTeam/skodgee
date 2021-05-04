@@ -1,7 +1,7 @@
 # SKodgee 
 SKodgee Obviously Designed for Generation Enhanced Efficiently
 
-[Consulter la version française](/README.fr.md)
+[Consulter la version française](https://github.com/SkodgeeTeam/skodgee/blob/main/README.fr.md)
 
 ## What it is
 

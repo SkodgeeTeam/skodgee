@@ -3,7 +3,7 @@
   "displayName": "SKODGEE",
   "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
   "publisher": "skodgeeTeam",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.46.0"
   },
@@ -34,10 +34,15 @@
     "configuration": {
       "title": "SKodgee",
       "properties": {
-        "skodgee.skeletonLocation": {
-          "type": "string",
+        "skodgee.skeletonLocations": {
+          "type": "array",
           "scope": "resource",
-          "description": "skeleton path"
+          "description": "skeletons path"
+        },
+        "skodgee.userMode": {
+          "type": "boolean",
+          "scope": "machine-overridable",
+          "description": "check = developer mode / uncheck = skeleton editor mode"
         }
       }
     }
