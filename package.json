@@ -3,7 +3,7 @@
   "displayName": "SKODGEE",
   "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
   "publisher": "skodgeeTeam",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.46.0"
   },
@@ -20,15 +20,15 @@
     "commands": [
       {
         "command": "skodgee.generation",
-        "title": "SKodgee - generation based on skeleton"
+        "title": "SKodgee - génération à partir d'une sélection de squelettes"
       },
       {
         "command": "skodgee.inject",
-        "title": "SKodgee - reverse from generated with dictionnary"
+        "title": "SKodgee - revenir au squelette"
       },
       {
         "command": "skodgee.develop",
-        "title": "SKodgee - test my skeleton"
+        "title": "SKodgee - tester le squelette"
       }
     ],
     "configuration": {
@@ -37,12 +37,12 @@
         "skodgee.skeletonLocations": {
           "type": "array",
           "scope": "resource",
-          "description": "skeletons path"
+          "description": "emplacement des squelettes"
         },
         "skodgee.userMode": {
           "type": "boolean",
           "scope": "machine-overridable",
-          "description": "check = developer mode / uncheck = skeleton editor mode"
+          "description": "mode utilisateur (coché) / mode développeur de squelettes (décoché)"
         }
       }
     }

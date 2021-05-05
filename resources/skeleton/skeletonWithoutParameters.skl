@@ -1,0 +1,18 @@
+# skodgee
+    { 
+        "name": "Squelette sans paramètre",
+        "description": "Pas de paramètre dans ce squelette",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }    
+# end
+# declare
+# end
+Ce squelette ne contient aucun appel de paramètre.
+Il est un texte invariant qui sera toujours identique
+quel que soit l'usage.
+# model model1
+Ceci est un modèle qui peut être utilisé
+sur place ou dans un autre squelette
+# endmodel

@@ -1,0 +1,16 @@
+# skodgee
+    { 
+        "name": "Include",
+        "description": "Squelette appelant des squelettes",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }    
+# end
+# declare
+    { "grp":"premier", "include":"skeletonWithoutParameters.skl" }
+# end
+Ci-dessous le contenu affichable d'un squelette appelé par include
+------------------------------------------------------------------
+# include {{premier}}
+------------------------------------------------------------------

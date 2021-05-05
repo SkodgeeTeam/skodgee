@@ -11,7 +11,7 @@ var dictionnaryValues = undefined
 
 var loadedSkeletonSource = ''
 var loadedSkeletonName = ''
-var generateCode
+var generatedCode
 
 var uid = 0
 
@@ -181,7 +181,10 @@ generateForm = data => {
             appendElements(document.querySelector('#formulaire'),elements)
         }
         else if(e.grp!==undefined) {
-            appendElements(document.querySelector('#formulaire'),generateGroup(e,undefined,dictionnaryValues!==undefined ? dictionnaryValues[i] : undefined))
+            let group = generateGroup(e,undefined,dictionnaryValues!==undefined ? dictionnaryValues[i] : undefined)
+            if(group!==undefined) {
+                appendElements(document.querySelector('#formulaire'),group)
+            }
         }
     })
     document.querySelector('#generateCode').classList.remove('hidden')

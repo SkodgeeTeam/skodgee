@@ -1,0 +1,23 @@
+# skodgee
+    { 
+        "name": "Models",
+        "description": "Squelette contenant des models",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }    
+# end
+# declare
+    { "grp":"premier", "include":"skeletonWithoutParameters.skl" }
+# end
+Ci-dessous le contenu d'un squelette appelé par un include
+duquel n'ai affiché que le texte brut
+-----------------------------------------------------------------
+# include {{premier}}
+-----------------------------------------------------------------
+
+On appelle ci-dessous un modèle qui provient du squelette
+appelé avant par un include 
+-----------------------------------------------------------------
+# usemodel model1
+-----------------------------------------------------------------

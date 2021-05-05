@@ -1,18 +1,27 @@
 # Change Log
 
+## [0.0.4]
+
+- Correction d'une anomalie dans la génération du formulaire quand on faisait appel à un squelette par include et que ce
+squelette inclu ne contenait aucun paramètre
+- Mise au point de squelettes de test supplémentaires dans le répertoire resources/skeleton
+- On abandonne (déjà!) la double documentation en français et en anglais. On va plutôt se concentrer sur la qualité de la documentation 
+en français. Si quelqu'un souhaite en assurer la traduction, il sera accueuillie comme il se doit.
+
 ## [0.0.3]
 
-- In preferences, added a `User mode` to choose between `developer mode` and `skeleton editor mode`. 
-The first one is suitable for users whose goal is to generate documents with the SKodgee tool. 
-The second one is useful for those who create and maintain SKodgee skeletons.
-- The skeleton location in SKodgee preferences was a unique location ; now several locations can be declared, so 
-user can manage multiple skeleton collections without having to swap between location each time.
+- Dans les préférences, ajout d'un `User mode` pour choisir entre le `mode utilisateur` et le `mode développeur`. 
+Le premier permet à l'utilisateur de générer des documents avec SKodgee. Le second est réservé à la mise au point et l'évolution de squelettes.
+Très peu de différences entre ces 2 modes, mais cela pourra être enrichi. Dans le mode utilisateur, l'interface ne montre pas le squelette.
+- L'emplacement des squelettes paramétré dans les préférences était unique ; si on voulait changer de collection de squelettes, il fallait
+modifier ce paramètre à chaque fois. Maintenant on peut donner plusieurs emplacements, il n'est plus nécessaire d'en changer pour utiliser
+les squelettes de plusieurs collections.
 
 ## [0.0.2]
 
-- `calc` directive is now effective
-- `include` directive is now effective
+- directive `calc` corrigée
+- directive `include` corrigée
 
 ## [0.0.1]
 
-- Initial version, with some issues ;)
+- Version initiale avec quelques anomalies ;)
