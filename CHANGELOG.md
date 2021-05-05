@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.6]
+
+- Nouvelle directive `defstr` pour définir une variable de stype chaine de caractère.
+
 ## [0.0.5]
 
 - Ajout des directives `pushformat` et `popformat` pour mémoriser et restituer un format. Voir la documentation de la format de sortie
