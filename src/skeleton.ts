@@ -1,7 +1,5 @@
 import * as complement from './complement'
 import * as path from 'path'
-import { serialize } from 'node:v8'
-import { unwatchFile } from 'node:fs'
 
 interface variableObject {
     var: string,
@@ -54,6 +52,14 @@ interface forObject {
 
 type forStack = forObject[]
 
+interface formatObject {
+    pos: number,
+    len: number, 
+    text: string
+}
+
+type formatStack = formatObject[]
+
 const prefix = '^\\s*#'
 const prefixInDeclare = false
 
@@ -64,6 +70,8 @@ const RGXinDeclare = new RegExp( prefixInDeclare ? prefix.concat('\\s*(.*)') : '
 const RGXend = new RegExp(prefix.concat('\\s*(end)\\s*$'))
 const RGXdoc = new RegExp(prefix.concat('\\s*(dictionnary)\\s+(standard|base64|compact64|compact|serialize64|serialize|dense64|dense)\\s*(v2)*\\s*$'))
 const RGXformat = new RegExp(prefix.concat('\\s*(format)\\s*$'))
+const RGXpushformat = new RegExp(prefix.concat('\\s*(pushformat)\\s*$'))
+const RGXpopformat = new RegExp(prefix.concat('\\s*(popformat)\\s*$'))
 const RGXle = /le|LE|<=/
 const RGXge = /ge|GE|>=/
 const RGXne = /ne|NE|#|!=|<>/
@@ -164,7 +172,8 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
     let forStack:forStack = []
     let sourceCode:string[] = []
 
-    let lineFormat = undefined
+    let lineFormat:formatObject|undefined = undefined
+    let formatStack:formatStack = []
 
     let sourceLines = source.split(/\r\n|\n/)
     let sourceIndex = 0
@@ -177,7 +186,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
 
     exploration: while(sourceIndex<sourceLines.length) {
 
-        let line = sourceLines[sourceIndex]
+        let line:string = sourceLines[sourceIndex]
 
         // dans le skodgee ?
         if(inSkodgee===true) {
@@ -388,6 +397,26 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             continue exploration
         }
 
+        // directive pushformat
+        let searchPushformat = RGXpushformat.exec(line)
+        if(searchPushformat!==null) {
+            if(lineFormat!==undefined) {
+                formatStack.push(lineFormat)
+            }
+            sourceIndex++
+            continue exploration
+        }
+
+        // directive popformat
+        let searchPopformat = RGXpopformat.exec(line)
+        if(searchPopformat!==null) {
+            if(formatStack.length>0) {
+                lineFormat = formatStack.pop()
+            }
+            sourceIndex++
+            continue exploration
+        }
+        
         // directive path pour résolution include
         let searchPath = RGXpath.exec(line)
         if(searchPath!==null) {

@@ -347,6 +347,11 @@ Chaque ligne produite par le squelette est inscrite dans le champ représenté p
     formattage : ________________________________________________ :
  
 La directive prend effet pour toutes les lignes produites après elle et jusqu'à la fin du squelette ou jusqu'à la directive `format` suivante.
+
+Deux directives complémentaires ont été définies pour mémoriser le format courant puis le récupérer plus tard. La mémorisation se fait par la
+directive `pushformat` et la récupération par la directive `popformat`. Attention à ne pas boucler de façon non contrôlé sur la directive
+`pushformat` afin de ne pas provoquer un débordement de pile. L'intérêt de ces directives est de permettre de récupérer un format précédent
+sans le connaître. Ceci peut arriver si on fait appel par include à un squelette qui doit modifier le format provisoirement.
  
 ### 🡆 Définition et utilisation de modèles
 

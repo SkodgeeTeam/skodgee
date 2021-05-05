@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.5]
+
+- Ajout des directives `pushformat` et `popformat` pour mémoriser et restituer un format. Voir la documentation de la format de sortie
+pour plus de précisions.
+
 ## [0.0.4]
 
 - Correction d'une anomalie dans la génération du formulaire quand on faisait appel à un squelette par include et que ce
