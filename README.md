@@ -378,7 +378,7 @@ L'utilisation d'une directive `usemodel` dans une directive `model` est sans eff
 
 La directive `defstr` permet de définir une variable de travail alphanumérique.
 
-    # defnum variableDeTravail valeur
+    # defstr variableDeTravail valeur
 
 Le nom de la variable de travail est libre et sa valeur initiale est donnée par la totalité des caractères qui suivent, incluant même
 les espaces jusqu'à la fin de ligne. On peut composer la valeur en appelant d'autres variables. 
