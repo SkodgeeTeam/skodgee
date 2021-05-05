@@ -78,10 +78,10 @@ Chaque squelette est composé de 3 parties
  
 ## Entête du squelette
 
-Elle commence par `# groucho` sur la 1ère ligne et se termine par `# end` sur la dernière ligne.
+Elle commence par `# skodgee` sur la 1ère ligne et se termine par `# end` sur la dernière ligne.
  Entre ces 2 lignes on retrouve un objet JSON dont les champs obligatoires sont `"name"` et `"prefix"`  
  
-    # groucho  
+    # skodgee  
       { "name": "nom du squelette",
         "description": "texte décrivant la finalité du squelette",
         "author": "auteur du squelette",
@@ -258,7 +258,7 @@ Le paramètre `{{groupe}}` est obligatoire, il permet d'indiquer un groupe qui p
 La génération du code est toujours précédée par une phase de résolution des inclusions ; pendant celle-ci, chaque directive `include` est remplacée par la séquence `path` suivante :
  
     # path {{groupe}}
-    contenu du squelette inclu (sans ses directives # groucho et # declare)
+    contenu du squelette inclu (sans ses directives # skodgee et # declare)
     # endpath
  
 ### 🡆 Paramètres spéciaux
