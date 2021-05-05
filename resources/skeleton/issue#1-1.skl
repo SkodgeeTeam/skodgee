@@ -1,0 +1,20 @@
+# skodgee
+    { 
+        "name": "Issue#1-1",
+        "description": "Modifier provisoirement le format de sortie",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "hidden": "",
+        "prefix": "#" 
+    }
+# end
+# declare
+# end
+# model modelA
+# pushformat
+# format
+:: _______________________________________________________________ ::
+Ce texte provient du modèle nommé modelA du squelette issue#1-1.skl
+Et cette ligne de texte aussi, mais c'est la dernière de ce modèle.
+# popformat
+# endmodel

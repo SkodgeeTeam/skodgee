@@ -1,0 +1,43 @@
+# skodgee
+    { 
+        "name": "Issue#1",
+        "description": "Modifier provisoirement le format de sortie",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var":"A" },
+    { "grp":"G", "include":"issue#1-1.skl" }
+# end
+# include {{G}}
+         1         2         3         4         5        6          7         8
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+          
+Le contenu de ce squelette est défini sur une largeur de 80 caractères.
+On va appliquer dessus une directive format qui va en modifier l'aspect à partir
+des lignes suivantes qui contiennent toutes 80 caractères dans le squelette. Et
+on appelle au milieu de tout ça un modèle d'un autre squelette qui utilise un
+autre format et ignore le format utilisé dans l'appelant. Quand on sort de
+ce modèle, on a quand même un retour au bon format, parce qu'il utilise des
+directives pushformat et popformat qui permettent de mémoriser puis de restituer
+le format précédant (voir cela dans le squelette issue#1-1.skl)
+
+# format
+              _________________________________________________
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+# format
+    >>> _____________________________________________________________ <<<
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+# usemodel modelA
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+# format
+________________________________________________________________________________
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
+12354678901235467890123546789012354678901235467890123546789012354678901235467890
