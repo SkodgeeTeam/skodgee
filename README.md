@@ -374,13 +374,27 @@ L'utilisation d'une directive `usemodel` dans une directive `model` est sans eff
  
 > Si un modèle provient d'un squelette appelé par `include`, et de ce modèle fait référence à des variables définie dans ce squelette, alors il faut inclure la directive `usemodel` dans une directive `path` qui pointe sur le groupe défini pour l'appel de l'include.
  
+### 🡆 Variable de type chaine de caractère
+
+La directive `defstr` permet de définir une variable de travail alphanumérique.
+
+    # defnum variableDeTravail valeur
+
+Le nom de la variable de travail est libre et sa valeur initiale est donnée par la totalité des caractères qui suivent, incluant même
+les espaces jusqu'à la fin de ligne. On peut composer la valeur en appelant d'autres variables. 
+
+Pour utiliser la variable de travail on doit systématiquement la faire précéder d'un double underscore `{{__variableDeTravail}}`.
+
+Quand on utilise la directive `if` avec une variable définie par la directive `defstr` pour la comparer à une chaine de caractère, alors
+il faut encadrer la chaine de caractère avec des simples quotes (apos), sinon le résultat de la comparaison ne sera pas prévisible.
+
 ### 🡆 Opérations numériques
 
 La directive `defnum` permet de déclarer une variable de travail numérique.
  
     # defnum variableDeTravail formule
  
-La nom de la variable de travail est libre et sa valeur initiale est donnée par la formule qui la suit. Cette formule doit être exprimée en notation arithmétique avec la possibilité d'utiliser dans la formule toutes les variables nécessaires, celles-ci pouvant être soient des variable déclarées au dictionnaire, soient des variables de tavail ou des variables techniques, c'est à dire des variables issues de l'application de toute autre directive précédente ; elles devront également être numériquement valides au moment de l'application de la déclaration.
+Le nom de la variable de travail est libre et sa valeur initiale est donnée par la formule qui la suit. Cette formule doit être exprimée en notation arithmétique avec la possibilité d'utiliser dans la formule toutes les variables nécessaires, celles-ci pouvant être soient des variable déclarées au dictionnaire, soient des variables de tavail ou des variables techniques, c'est à dire des variables issues de l'application de toute autre directive précédente ; elles devront également être numériquement valides au moment de l'application de la déclaration.
  
 La variable de travail est valide à partir de la directive `defnum` et ne peut-être déclarée à nouveau dans la suite du squelette. 
  

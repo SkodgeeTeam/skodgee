@@ -1,0 +1,33 @@
+# skodgee
+    { 
+        "name": "Issue#2",
+        "description": "Définir et utiliser une variable de type string",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var":"A" }
+# end
+A = {{A}}
+# defstr B blabla
+B = {{__B}}
+# if {{__B}} = blabla
+oui B est pas égale à blabla
+# endif
+# if {{__B}} = 'blabla'
+oui B est égale à 'blabla'
+# endif
+# if {{__B}} # blabla
+mais B n'est pas égale à blabla
+# endif
+# if {{__B}} # 'blabla'
+mais B n'est pas égale à 'blabla'
+# endif
+# if {{__B}} = {{A}}
+B est égale à A
+# endif
+# if {{__B}} # {{A}}
+B n'est pas égale à A
+# endif

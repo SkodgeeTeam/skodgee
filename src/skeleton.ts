@@ -92,6 +92,7 @@ const RGXendpath = new RegExp(prefix.concat('\\s*(endpath)\\s*$'))
 const RGXendmodel = new RegExp(prefix.concat('\\s*(endmodel)\\s*$'))
 const RGXusemodel = new RegExp(prefix.concat('\\s*(usemodel)\\s+(\\w+)'))
 const RGXdefnum = new RegExp(prefix.concat('\\s*(defnum)\\s+(\\w+)\\s+(.+)'))
+const RGXdefstr = new RegExp(prefix.concat('\\s*(defstr)\\s+(\\w+)\\s+(.+)'))
 const RGXcalc = new RegExp(prefix.concat('\\s*(calc)\\s+(\\w+)\\s+(.+)'))
 const RGXapostString = /^'(.*)'$/
 const RGXquotedString = /^"(.*)"$/
@@ -459,6 +460,26 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             }
             let value = eval(rl)
             localVariables.push({name:searchDefine[2],value:value})
+            sourceIndex++
+            continue exploration
+        }
+
+        // directive defstr
+        let searchDefstr = RGXdefstr.exec(line)
+        if(searchDefstr!==null) {
+            let lv = localVariables.find(e=>{ return searchDefstr!==null ? e.name===searchDefstr[2] : false })
+            if(lv!==undefined) {
+                throw(''.concat(
+                    `La génération du code a échoué`,
+                    `\nla variable locale "${searchDefstr[2]}" a été redéfinie à tort, elle existait déjà`,
+                    `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
+                    `\n==> ligne          :\n${line}\n`,
+                    `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
+                ))
+            }
+            let rl = resolveLine(searchDefstr[3],vars,forStack,activePath,sourceIndex,skeletonName)
+            let value = rl
+            localVariables.push({name:searchDefstr[2],value:value})
             sourceIndex++
             continue exploration
         }
