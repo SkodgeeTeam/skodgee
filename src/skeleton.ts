@@ -296,6 +296,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             continue exploration
         }
 
+        // début d'un for ?
         let searchfor = RGXfor.exec(line)
         if(searchfor!==null) {
             let ap = activePath.join('_')

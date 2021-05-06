@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.0.7]
+
+- Correction pour voir les groupes vides après une injection qui n'étaient pas visibles, donc pour lesquelles il était
+impossible de créer une 1ère occurrence dedans.
+- Correction du problème d'affichage qui affichait des informations en surimpression lors de la création
+d'une nouvelle occurrence dans les groupes complexes.
+
 ## [0.0.6]
 
 - Nouvelle directive `defstr` pour définir une variable de stype chaine de caractère.

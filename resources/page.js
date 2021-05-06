@@ -297,7 +297,7 @@ generateGroup = (e,parentName=undefined,values=undefined) => {
         plus.addEventListener('click',event => {
             if([...divGroup.children].filter(e=>e.classList.contains('occurrenceContainer')).length<max) {
                 let occ = generateOccurrenceIntoAfter(e,divGroup,undefined,name).lastCreated
-                let maxHeight = occ.getBoundingClientRect().height
+                /*let maxHeight = occ.getBoundingClientRect().height
                 occ.style.setProperty('height','0px')
                 let currentHeight = 0
                 let iv = setInterval(()=>{
@@ -307,13 +307,15 @@ generateGroup = (e,parentName=undefined,values=undefined) => {
                 setTimeout(()=>{
                     refreshCounting()
                     clearInterval(iv)
-                },300)
+                },300)*/
+                refreshCounting()
             }
         })
         divGroupHead.appendChild(plus)
     }
 
-    return generateOccurrenceIntoAfter(e,divGroup,undefined,name,values).group
+    let group = generateOccurrenceIntoAfter(e,divGroup,undefined,name,values).group
+    return group
 
 }
 
@@ -339,7 +341,7 @@ generateOccurrenceIntoAfter = (e,div,beforeNode=undefined,parentName,values=unde
     let value = undefined
     if(values!==undefined) {
         if(Array.isArray(values)) {
-            if(values.length===0) return [div]
+            if(values.length===0) return { group:[div], lastCreated:undefined }
             value = values.shift()
         }
     }
@@ -405,7 +407,7 @@ generateOccurrenceIntoAfter = (e,div,beforeNode=undefined,parentName,values=unde
         plus.addEventListener('click',event=>{
             if([...div.children].filter(e=>e.classList.contains('occurrenceContainer')).length<max) {
                 let occ = generateOccurrenceIntoAfter(e,div,occContainer,parentName).lastCreated
-                let maxHeight = occ.getBoundingClientRect().height
+                /*let maxHeight = occ.getBoundingClientRect().height
                 occ.style.setProperty('height','0px')
                 let currentHeight = 0
                 let iv = setInterval(()=>{
@@ -415,7 +417,8 @@ generateOccurrenceIntoAfter = (e,div,beforeNode=undefined,parentName,values=unde
                 setTimeout(()=>{
                     refreshCounting()
                     clearInterval(iv)
-                },300)
+                },300)*/
+                refreshCounting()
             }
         })
         let moins = document.createElement('button')
