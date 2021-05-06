@@ -1,0 +1,31 @@
+# skodgee
+    { 
+        "name": "Repeat dans un if",
+        "description": "repeat into if",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var":"A", "lib":"variable A" },
+    { "var":"B", "lib":"variable B" }
+# end
+Quelles valeurs A et B doivent prendre pour
+qu'il n'y ai aucune erreur 
+et que la valeur de toto soit affichée ?
+# if {{A}} = {{B}}
+#   defnum zorro {{B}}
+#   repeat {{A}}
+#     defnum toto {{A}}
+#     repeat {{__zorro}}
+
+#     endrepeat
+#   endrepeat
+# endif
+
+Que vaut toto ?
+
+toto = {{__toto}}
+
+c'est un succès !!!

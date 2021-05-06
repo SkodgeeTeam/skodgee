@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.8]
+
+- Il n'est plus tenté de résoudre à tort des variables appelées dans les directives repeat 
+non vérifiées (repeat contenu dans if sur condition fausse, dans for sur groupe vide, dans un repeat zéro) 
+ce qui pouvait provoquer des erreurs de génération.
+
 ## [0.0.7]
 
 - Correction pour voir les groupes vides après une injection qui n'étaient pas visibles, donc pour lesquelles il était

@@ -264,7 +264,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         // début d'un repeat numérique ?
         let searchRepeatInteger = RGXrepeatInteger.exec(line)
         if(searchRepeatInteger!==null) {
-            repeatStack.push({ indice:1, max:parseInt(searchRepeatInteger[2]), sourceIndex:sourceIndex })
+            repeatStack.push({ indice:1, max: processNext===true ? parseInt(searchRepeatInteger[2]) : 0, sourceIndex:sourceIndex })
             sourceIndex++
             continue exploration
         }
@@ -272,12 +272,16 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         // début d'un repeat variable ?
         let searchRepeat = RGXrepeat.exec(line)
         if(searchRepeat!==null) {
-            let rsi = repeatSolve(searchRepeat[2],vars,forStack)
             let max = 0
-            if(rsi!==undefined) {
-                if(!isNaN(rsi.value) && rsi.value!='') max = parseInt(rsi.value)
+            // ne pas calculer rsi si on est dans un if ou un for ou un repeat inactif
+            // pour 1) ne pas planter et 2) avoir un max à zéro
+            if(processNext===true) {
+                let rsi = repeatSolve(searchRepeat[2],vars,forStack)
+                if(rsi!==undefined) {
+                    if(!isNaN(rsi.value) && rsi.value!='') max = parseInt(rsi.value)
+                }
             }
-            repeatStack.push({ indice:1, max:max, sourceIndex:sourceIndex })
+            repeatStack.push({ indice:1, max: max, sourceIndex:sourceIndex })
             sourceIndex++
             continue exploration
         }
