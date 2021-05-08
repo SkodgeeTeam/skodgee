@@ -51,7 +51,7 @@ document.querySelector('#swap').addEventListener('click',e=>{
 
 document.querySelector('#generateCode').addEventListener('click',e=>{
     let res =[]
-    document.querySelectorAll('#formulaire input').forEach( inp => {
+    document.querySelectorAll('#formulaire input,#formulaire select').forEach( inp => {
         res.push({ var:inp.name, value:inp.value })
     })
     resetVars()
@@ -206,34 +206,48 @@ generateInput = (e,parentName=undefined,value=undefined) => {
         label.for = newId()
         res.push(label)
 
-        let input = document.createElement('input')
-        input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
-        input.id = lastId()
-        if(e.opt!==undefined) {
-            let datalist = document.createElement('datalist')
-            datalist.id = newId()
-            input.setAttribute('list',lastId())
-            e.opt.forEach( dl => {
+        let input
+        if(e.opt===undefined) {
+            input = document.createElement('input')
+            input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+            input.id = lastId()
+            if(e.opt!==undefined) {
+                let datalist = document.createElement('datalist')
+                datalist.id = newId()
+                input.setAttribute('list',lastId())
+                e.opt.forEach( dl => {
+                    let option = document.createElement('option')
+                    option.value = dl
+                    datalist.appendChild(option)
+                })
+                res.push(datalist)
+            } else if(e.type!==undefined) {
+                if(e.type==='numeric') {
+                    input.pattern = "^((?:[+-])?\\d+(?:\\.\\d*)?)$"
+                } else if(e.pattern!==undefined) {
+                    input.pattern = e.pattern
+                }
+            }
+            if(e.placeholder!==undefined) {
+                input.placeholder = e.placeholder
+            }
+            /*****************************/
+            /***** T E S T - M O D E *****/
+            if(testMode) input.value = e.var
+            /***** T E S T - M O D E *****/
+            /*****************************/
+        } else {
+            input = document.createElement('select')
+            input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+            input.id = lastId()
+            e.opt.forEach( (dl,i) => {
                 let option = document.createElement('option')
                 option.value = dl
-                datalist.appendChild(option)
+                option.textContent = dl
+                input.appendChild(option)
             })
-            res.push(datalist)
-        } else if(e.type!==undefined) {
-            if(e.type==='numeric') {
-                input.pattern = "^((?:[+-])?\\d+(?:\\.\\d*)?)$"
-            } else if(e.pattern!==undefined) {
-                input.pattern = e.pattern
-            }
+            input.selectedIndex=0
         }
-        if(e.placeholder!==undefined) {
-            input.placeholder = e.placeholder
-        }
-        /*****************************/
-        /***** T E S T - M O D E *****/
-        if(testMode) input.value = e.var
-        /***** T E S T - M O D E *****/
-        /*****************************/
         if(value!==undefined) input.value = value
         else if(e.ini!==undefined) input.value = e.ini
         res.push(input)
