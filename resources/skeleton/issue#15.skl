@@ -1,0 +1,18 @@
+# skodgee
+    { 
+        "name": "Issue#14",
+        "description": "pas toujours de détail lors d'un plantage à la génération",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "variable", "ini":"2" }
+# end
+# defnum valeur 1
+# defstr chaine 1
+# calc valeur {{__valeur}} + {{variable}}
+valeur = {{__valeur}}
+# calc chaine {{__chaine}} + {{variable}}
+chaine = {{__chaine}}

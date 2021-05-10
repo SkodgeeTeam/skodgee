@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.0.10] - 2021-05-10
+
+- Plus de plantage sur la directive if quand on tentait de tester la variable d'indice de la directive for qui la précédait
+immédiatement alors que le groupe pointé par la directive for n'avait pas d'occurrence.
+- Tout plantage lors de la génération retourne désormais le numéro et le contenu de la ligne qui provoque l'erreur.
+- La directive `calc` est maintenant utilisable sur les variables de travail déclarée par la directive `defstr`.
+
+## [0.0.9]
+
+- Pour les variables avec une liste de valeurs, la liste filtrante a été remplacé par une liste classique, ce qui permet
+d'avoir la visibilité sur toutes les valeurs possibles.
+- Les boutons "Générer le code" et "Récupérer le code généré" on été déplacé en haut du formulaire.
+
 ## [0.0.8]
 
 - Il n'est plus tenté de résoudre à tort des variables appelées dans les directives repeat 
