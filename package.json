@@ -10,6 +10,11 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type":"git",
+    "url":"https://github.com/SkodgeeTeam/skodgee"
+  },
+  "icon": "resources/skodgee256.png",
   "activationEvents": [
     "onCommand:skodgee.generation",
     "onCommand:skodgee.inject",
