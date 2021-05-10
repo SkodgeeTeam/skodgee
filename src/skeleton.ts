@@ -117,6 +117,9 @@ const RGXdictionnary64 = /(\d{3})(\d{3})(\d{3})dico/
 let repeatStack:Array<{indice:number, max:number, sourceIndex:number}>
 let localVariables:Array<{name:string, value:number|string}>
 
+export let nfoCurrentLine:string
+export let nfoCurrentIndex:number
+
 export function analyzeSkeleton(skeletonSourceText:string):dictionnary {
     let lines = skeletonSourceText.split('\n')
     let declare:string = ""
@@ -188,6 +191,9 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
     exploration: while(sourceIndex<sourceLines.length) {
 
         let line:string = sourceLines[sourceIndex]
+
+        nfoCurrentLine = line
+        nfoCurrentIndex = sourceIndex
 
         // dans le skodgee ?
         if(inSkodgee===true) {
@@ -305,14 +311,17 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         if(searchfor!==null) {
             let ap = activePath.join('_')
             let variableWithPath = ap.concat(ap!==''?'_':'',searchfor[2])
-            let fsi = forSolve(variableWithPath,vars,forStack)
+            // calcul des occurrences traitées par le for (forcé à undefined si on est déjà dans un if ou un for inactif)
+            let fsi = processNext===true ? forSolve(variableWithPath,vars,forStack) : undefined
             forStack.push({
                 grp: variableWithPath,
-                // calcul des occurrences traitées par le for (forcé à undefined si on est déjà dans un if ou un for inactif)
-                occurrences: processNext===true ? fsi!==undefined ? fsi.occurrences : undefined : undefined,
+                occurrences: fsi!==undefined ? fsi.occurrences : undefined,
                 occurrenceIndex: 0,
                 sourceIndex: sourceIndex
             })
+            // on force l'état inactif parce qu'on vient de rentrer dans un for inactif 
+            // (ce qui ne change rien si on est déjà dans un if ou un for inactif)
+            if(forStack.slice(-1)[0].occurrences===undefined) processNext=false
             sourceIndex++
             continue exploration
         }
@@ -445,10 +454,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             let lv = localVariables.find(e=>{ return searchDefine!==null ? e.name===searchDefine[2] : false })
             if(lv!==undefined) {
                 throw(''.concat(
-                    `La génération du code a échoué`,
-                    `\nla variable locale "${searchDefine[2]}" a été redéfinie à tort, elle existait déjà`,
-                    `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                    `\n==> ligne          :\n${line}\n`,
+                    `La variable locale "${searchDefine[2]}" a été redéfinie à tort, elle existait déjà`,
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
@@ -456,10 +462,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             let num = rl.replace(/[^-()\d/*+.]/g,'')
             if(num!=rl) {
                 throw(''.concat(
-                    `La génération du code échoué`,
-                    `\nla variable locale "${searchDefine[2]}" a été déclarée avec une valeur ${searchDefine[3]} qui n'est pas numérique`,
-                    `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                    `\n==> ligne          :\n${line}\n`,
+                    `La variable locale "${searchDefine[2]}" a été déclarée avec une valeur ${searchDefine[3]} qui n'est pas numérique`,
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
@@ -475,10 +478,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             let lv = localVariables.find(e=>{ return searchDefstr!==null ? e.name===searchDefstr[2] : false })
             if(lv!==undefined) {
                 throw(''.concat(
-                    `La génération du code a échoué`,
-                    `\nla variable locale "${searchDefstr[2]}" a été redéfinie à tort, elle existait déjà`,
-                    `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                    `\n==> ligne          :\n${line}\n`,
+                    `La variable locale "${searchDefstr[2]}" a été redéfinie à tort, elle existait déjà`,
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
@@ -498,19 +498,14 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                 let num = rl.replace(/[^-()\d/*+.]/g,'')
                 if(num!==rl) {
                     throw(''.concat(
-                        `La génération du code a échoué`,
-                        `\nla variable locale "${searchSet[2]}" a été déclarée avec une valeur ${searchSet[3]} qui n'est pas numérique`,
-                        `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                        `\n==> ligne          :\n${line}\n`,
+                        `La variable locale "${searchSet[2]}" a été déclarée avec une valeur ${searchSet[3]} qui n'est pas numérique`,
                         `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                     ))
                 }
                 lv.value = eval(num)
             } else {
                 throw(''.concat(
-                    `la génération du code a échoué`,
-                    `\nla variable locale "${searchSet[2]}" n'a pas été résolue`,
-                    `\n==> ligne          :\n${line}\n`,
+                    `La variable locale "${searchSet[2]}" n'a pas été résolue`,
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
@@ -536,10 +531,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             let vs = varSolve(variableWithPath,vars,forStack,vars)
             if(vs.type!=='var' && vs.type!=='str' && vs.type!=='number') {
                 throw(''.concat(
-                    `La génération du code a échoué`,
-                    `\nla variable "${variable}" n'a pas été résolue`,
-                    `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                    `\n==> ligne    :\n${line}\n`,
+                    `La variable "${variable}" n'a pas été résolue`,
                     `\n==> vars     :\n${JSON.stringify(vars,null,4)}`,
                     `\n==> forStack :\n${JSON.stringify(forStack,null,4)}`
                 ))
@@ -574,10 +566,7 @@ function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, 
         let vs = varSolve(variableWithPath,vars,forStack,vars)
         if(vs.type!=='var' && vs.type!=='str' && vs.type!=='number') {
             throw(''.concat(
-                `La génération du code a échoué`,
-                `\nla variable "${variable}" n'a pas été résolue`,
-                `\nen ligne ${sourceIndex+1} du squelette "${skeletonName}"`,
-                `\n==> ligne    :\n${line}\n`,
+                `La variable "${variable}" n'a pas été résolue`,
                 `\n==> vars     :\n${JSON.stringify(vars,null,4)}`,
                 `\n==> forStack :\n${JSON.stringify(vars,null,4)}`
             ))
@@ -1049,7 +1038,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
                     liens.push([skeletonName,fileName])
                     let scr = complement.searchCircularReference(liens)
                     if(scr.found===true) {
-                        throw(`référence circualire détectée dans les include sur ${scr.with} dans [${scr?.details.toString()}]`)
+                        throw(`référence circulaire détectée dans les include sur ${scr.with} dans [${scr?.details.toString()}]`)
                     }
                     // poursuivre l'exploration avec le nouveau squeltte inclu pour enrichir le dictionnaire
                     let edwi = await extendDictionnaryWithIncludes(skeletonLocations,fileName,liens)

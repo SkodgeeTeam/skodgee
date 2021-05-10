@@ -1,0 +1,29 @@
+# skodgee
+    { 
+        "name": "Issue#13",
+        "description": "plantage lors de l'utilisation d'un indice de groupe dans un groupe sans occurrence",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { 
+        "grp": "G1", 
+        "lib":"groupe G1",
+        "rpt":"0,5",
+        "cmp": [
+            { "var":"A", "lib":"variable A" },
+            { "var":"B", "lib":"variable B" }
+        ] 
+    }
+# end
+Avant correction de ce bug, on avait une erreur
+quand on supprimait groupe G1 avant de 
+lancer la génération.
+Maintenant ça ne plante plus !
+# for {{G1}}
+#   if {{G1__i}} > 0
+  on a au moins une occurrence
+#   endif
+# endfor

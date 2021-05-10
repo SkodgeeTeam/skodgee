@@ -1,0 +1,15 @@
+# skodgee
+    { 
+        "name": "Issue#14",
+        "description": "pas toujours de détail lors d'un plantage à la génération",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "diviseur", "ini":"2" }
+# end
+# defnum division 0
+# calc division 5 / {{diviseur}}
+5 / {{diviseur}} = {{__division}}

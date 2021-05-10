@@ -187,7 +187,13 @@ export async function activate(context: vscode.ExtensionContext) {
 								vscode.window.showErrorMessage(`La génération a échouée`)
 								panel.webview.postMessage({
 									command: 'resolveSkeletonOnError',
-									error: error.toString()
+									error: 
+										`plantage de la génération en ligne ${skeleton.nfoCurrentIndex+1}\n\n`+
+										`- détail de la ligne -------------------------------------------------\n`+
+										`${skeleton.nfoCurrentLine}\n`+
+										`----------------------------------------------------------------------\n\n`+
+										`- détail de l'erreur -------------------------------------------------\n`+
+										`${error.toString()}`
 								})
 							}
 						}
