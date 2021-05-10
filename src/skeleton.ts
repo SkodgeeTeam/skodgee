@@ -115,7 +115,8 @@ const RGXdictionnary = /(\d{3})(\d{3})(\d{3})\{"sn":"\w+.skl","dt":"/
 const RGXdictionnary64 = /(\d{3})(\d{3})(\d{3})dico/
 
 let repeatStack:Array<{indice:number, max:number, sourceIndex:number}>
-let localVariables:Array<{name:string, value:number|string}>
+enum localVariablesType { number="number",string="string" }
+let localVariables:Array<{name:string, value:number|string, type:localVariablesType}>
 
 export let nfoCurrentLine:string
 export let nfoCurrentIndex:number
@@ -467,7 +468,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                 ))
             }
             let value = eval(rl)
-            localVariables.push({name:searchDefine[2],value:value})
+            localVariables.push({name:searchDefine[2],value:value,type:localVariablesType.number})
             sourceIndex++
             continue exploration
         }
@@ -484,7 +485,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
             }
             let rl = resolveLine(searchDefstr[3],vars,forStack,activePath,sourceIndex,skeletonName)
             let value = rl
-            localVariables.push({name:searchDefstr[2],value:value})
+            localVariables.push({name:searchDefstr[2],value:value,type:localVariablesType.string})
             sourceIndex++
             continue exploration
         }
@@ -494,15 +495,21 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         if(searchSet!==null) {
             let lv = localVariables.find(e=>{ return searchSet!==null ? e.name===searchSet[2] : false })
             if(lv!==undefined) {
-                let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName).replace(/ /g,'')
-                let num = rl.replace(/[^-()\d/*+.]/g,'')
-                if(num!==rl) {
-                    throw(''.concat(
-                        `La variable locale "${searchSet[2]}" a été déclarée avec une valeur ${searchSet[3]} qui n'est pas numérique`,
-                        `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
-                    ))
+                if(lv.type===localVariablesType.number) {
+                    let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName).replace(/ /g,'')
+                    let num = rl.replace(/[^-()\d/*+.]/g,'')
+                    if(num!==rl) {
+                        throw(''.concat(
+                            `La variable locale "${searchSet[2]}" qui a été déclarée numérique est utilisée`,
+                            `\ndans un calcul avec une valeur ${searchSet[3]} qui n'est pas numérique`,
+                            `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
+                        ))
+                    }
+                    lv.value = eval(num)    
+                } else {
+                    let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName)
+                    lv.value = rl    
                 }
-                lv.value = eval(num)
             } else {
                 throw(''.concat(
                     `La variable locale "${searchSet[2]}" n'a pas été résolue`,
@@ -516,7 +523,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         // ligne de commentaire (place avant toutes les détections de directive)
         let searchcmt = RGXcomment.exec(line)
         if(searchcmt!==null) {
-            // pas recounduite
+            // pas reconduite
             sourceIndex++
             continue exploration
         }

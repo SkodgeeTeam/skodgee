@@ -5,6 +5,7 @@
 - Plus de plantage sur la directive if quand on tentait de tester la variable d'indice de la directive for qui la précédait
 immédiatement alors que le groupe pointé par la directive for n'avait pas d'occurrence.
 - Tout plantage lors de la génération retourne désormais le numéro et le contenu de la ligne qui provoque l'erreur.
+- La directive `calc` est maintenant utilisable sur les variables de travail déclarée par la directive `defstr`.
 
 ## [0.0.9]
 

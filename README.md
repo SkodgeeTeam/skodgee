@@ -381,7 +381,17 @@ La directive `defstr` permet de définir une variable de travail alphanumérique
     # defstr variableDeTravail valeur
 
 Le nom de la variable de travail est libre et sa valeur initiale est donnée par la totalité des caractères qui suivent, incluant même
-les espaces jusqu'à la fin de ligne. On peut composer la valeur en appelant d'autres variables. 
+les espaces jusqu'à la fin de ligne. On peut composer la valeur en appelant d'autres variables.
+
+Si lors de la génération une directive `defstr` est rencontrée plus d'une fois pour déclarer une même variable de travail, alors la génération 
+est stoppée en erreur. On s'interdira donc d'utiliser une directive `defstr` dans une répétition ou une boucle.
+
+La directive `calc` permet d'affecter une nouvelle valeur à la variable déclarée par `defstr`.
+ 
+    # calc variableDeTravail formule
+ 
+La formule suit les mêmes règles que pour la directive `defnum`. Il est aussi possible d'utiliser 
+la variable de travail elle-même dans la formule de calcul. Le résultat est une concaténation de toutes les données qui composent la formule.
 
 Pour utiliser la variable de travail on doit systématiquement la faire précéder d'un double underscore `{{__variableDeTravail}}`.
 
@@ -394,7 +404,14 @@ La directive `defnum` permet de déclarer une variable de travail numérique.
  
     # defnum variableDeTravail formule
  
-Le nom de la variable de travail est libre et sa valeur initiale est donnée par la formule qui la suit. Cette formule doit être exprimée en notation arithmétique avec la possibilité d'utiliser dans la formule toutes les variables nécessaires, celles-ci pouvant être soient des variable déclarées au dictionnaire, soient des variables de tavail ou des variables techniques, c'est à dire des variables issues de l'application de toute autre directive précédente ; elles devront également être numériquement valides au moment de l'application de la déclaration.
+Le nom de la variable de travail est libre et sa valeur initiale est donnée par la formule qui la suit.
+Cette formule doit être exprimée en notation arithmétique avec la possibilité d'utiliser dans la formule
+toutes les variables nécessaires, celles-ci pouvant être soient des variable déclarées au dictionnaire,
+soient des variables de tavail ou des variables techniques, c'est à dire des variables issues de l'application 
+de toute autre directive précédente ; elles devront également être numériquement valides au moment de l'application de la déclaration.
+
+Si lors de la génération une directive `defnum` est rencontrée plus d'une fois pour déclarer une même variable de travail, alors la génération 
+est stoppée en erreur. On s'interdira donc d'utiliser une directive `defstr` dans une répétition ou une boucle.
  
 La variable de travail est valide à partir de la directive `defnum` et ne peut-être déclarée à nouveau dans la suite du squelette. 
  
@@ -404,4 +421,7 @@ La directive `calc` permet faire des opérations sur une variable déclarée par
  
 La formule suit les mêmes règles que pour la directive `defnum`. Il est aussi possible d'utiliser la variable de travail elle-même dans la formule de calcul.
  
-Pour utiliser un variable de travail on la fait systématiquement précéder d'un double underscore `{{__variableDeTravail}}` ; bien que le double underscore soit déjà utilisé pour les variables techniques de boucles et de répétition quand elle sont préfixées par un chemin, cette notation est ici non ambiguë puisqu'une variable de travail n'est jamais évaluée dans un chemin, sa portée étant valide depuis sa déclaration et jusqu'à la fin du squelette. 
+Pour utiliser un variable de travail on la fait systématiquement précéder d'un double underscore `{{__variableDeTravail}}` ; 
+bien que le double underscore soit déjà utilisé pour les variables techniques de boucles et 
+de répétition quand elle sont préfixées par un chemin, cette notation est ici non ambiguë puisqu'une
+ variable de travail n'est jamais évaluée dans un chemin, sa portée étant valide depuis sa déclaration et jusqu'à la fin du squelette. 
