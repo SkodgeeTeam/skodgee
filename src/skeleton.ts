@@ -113,6 +113,7 @@ const RGXrepeatIndexAlpha = /^_rx\[(\d{1})\]|_rx$/
 const RGXrepeatMax = /^_rm\[(\d{1})\]|_rm$/
 const RGXdictionnary = /(\d{3})(\d{3})(\d{3})\{"sn":"\w+.skl","dt":"/
 const RGXdictionnary64 = /(\d{3})(\d{3})(\d{3})dico/
+const RGXexperimental = new RegExp(prefix.concat('\\s*(experimental)\\s*'))
 
 let repeatStack:Array<{indice:number, max:number, sourceIndex:number}>
 let localVariables:Array<{name:string, value:number|string}>
@@ -189,6 +190,11 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
 
         let line:string = sourceLines[sourceIndex]
 
+        // passe la main à la méthode expérimentale
+        if(RGXexperimental.test(line)) {
+            let xrs = experimentalResolveSkeleton(skeletonName,source,vars,dictionnary)
+            return xrs
+        }
         // dans le skodgee ?
         if(inSkodgee===true) {
             // fin di skodgee ?
@@ -1085,7 +1091,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
     return { dictionnary:dictionnary, sourceLines:bodyLines, sourceBrut:accu }
 }
 
-function extractSkeletonParts(skeletonSourceText:string):any {
+function extractSkeletonParts(skeletonSourceText:string):{skodgeeLines:string[], declareLines:string[], bodyLines:string[]} {
     let lines = skeletonSourceText.split('\n')
     let skodgeeLines:string[] = []
     let declareLines:string[] = []
@@ -1146,4 +1152,148 @@ export async function resolveModels(skeletonSourceText:string) {
         }
     })
     return resultLines.join('\n')
+}
+
+export function experimentalResolveSkeleton(skeletonName:string,source:any,vars:valorizedDictionnary,dictionnary:dictionnary):string[] {
+
+    if(JSON.stringify(vars)!==JSON.stringify(dictionnary)) {
+        throw(''.concat(
+            `resolveSkeleton - différence détectées entre {vars} et {dictionnary}`,
+            `\n==> Dysfonctionnement probable dans la préparation locale`,
+            `\n==> {vars} = ${vars}`,
+            `\n==> {dictionnary} = ${dictionnary}`
+        ))
+    }
+
+    let sourceLines = extractSkeletonParts(source).bodyLines.join('').split(/\r\n|\n|\r/)
+
+    let sourceIndex = 0
+
+    let resultLines:string[] = []
+
+    exploration: while(sourceIndex<sourceLines.length) {
+
+        let line:string = sourceLines[sourceIndex]
+
+        if(RGXcomment.test(line)) {
+            let erl:{inc:number,code:string[]} = experimentalResolveLine(sourceLines,sourceIndex,skeletonName,vars)
+            erl.code.forEach(c=>resultLines.push(c))
+            sourceIndex+= erl.inc>0 ? erl.inc : 1
+            continue exploration
+        } else {
+            //resultLines.push(`eXprint(\`${line.replace(/\{\{([^\}]+)\}\}/,"$${eXdico.$1}")}\`);`)
+            resultLines.push(`eXprint(\`${replaceVariableIntoString(line)}\`);`)
+            sourceIndex++
+            continue exploration
+        }
+
+    }
+
+    resultLines.unshift(
+        `var eXresultLines = [];`,
+        `var eXalphabetic = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')`,
+        `var eXrepeatStack = [];`,
+        `function exResolve() {`,
+        `var eXdico = ${JSON.stringify(varsToObject(vars))};`,
+        `eXdico['_ddSmmSyy']='date_du_jour';`,
+        `var eXformat = undefined;`,
+        `function eXprint(e) {if(eXformat!==undefined) {let text = e.concat(' '.repeat(eXformat.len)).slice(0,eXformat.len);eXresultLines.push(eXformat.text.slice(0,eXformat.pos).concat(text).concat(eXformat.text.slice(eXformat.pos + eXformat.len)));} else {eXresultLines.push(e);}};`
+    )
+
+    resultLines.push(
+        `return eXresultLines.join('\\n');`,
+        `}`,
+        `exResolve()`,
+    )
+    return [resultLines.join('\n')]
+    //return [eval(resultLines.join('\n'))]
+
+}
+
+function replaceVariableIntoString(chaine:string,level:number=0):string {
+    return chaine
+}
+
+function changeVariableNotation(varstring:string):string {
+    return `eXdico.${varstring}`
+}
+
+let experimentalRepeatStack: string[] = []
+let experimentalForStack: string[] = []
+
+function experimentalResolveLine(sourceLines:string[],sourceIndex:number,skeletonName:string,vars:valorizedDictionnary) {
+    return { inc:1, code:[sourceLines[sourceIndex]] }
+}
+
+function extractFormat(line:string):{pos:number,len:number,text:string}|undefined {
+    let format = /_+/.exec(line)
+    if(format!==null) {
+        return { pos: format.index, len:format[0].length, text:line }
+    }
+    return undefined
+}
+
+function generateACalltoPrintFunction(lines:string[]) {
+    return lines.map(l=>{
+        return `eXprint(\`${l}\`);`
+    })
+}
+
+function serializeDictionnarry(sourceLines:string[],sourceIndex:number,skeletonName:string,vars:valorizedDictionnary):string[] {
+    let code:string[] = []
+    let searchdic = RGXdoc.exec(sourceLines[sourceIndex])
+    if(searchdic!==null) {
+        let line = sourceLines[sourceIndex+1]
+        let format = /_+/.exec(line)
+        if(format!==null) {
+            let ll = format[0].length
+            let ii = format.index
+            let res = 
+                    (searchdic[2]==='base64') ?
+                        'dico'.concat(complement.convertBase64(docWith(skeletonName,vars))) :
+                    (searchdic[2]==='compact') ?
+                        docWith(skeletonName,varsToValues(vars)) :
+                    (searchdic[2]==='compact64') ?
+                        'dico'.concat(complement.convertBase64(docWith(skeletonName,varsToValues(vars)))) :
+                    (searchdic[2]==='serialize') ?
+                        docWith(skeletonName,serializePathsAndValues(extractPathsAndValues(vars))) :
+                    (searchdic[2]==='serialize64') ?
+                        'dico'.concat(complement.convertBase64(docWith(skeletonName,serializePathsAndValues(extractPathsAndValues(vars))))) :
+                    (searchdic[2]==='dense') ?
+                        docWith(skeletonName,makeDensePathsAndValues(extractPathsAndValues(vars))) :
+                    (searchdic[2]==='dense64') ?
+                        'dico'.concat(complement.convertBase64(docWith(skeletonName,makeDensePathsAndValues(extractPathsAndValues(vars))))) :
+                        docWith(skeletonName,vars)
+            let lg = Math.ceil((res.length + 9)/ll)
+            res = ('000'+ii).slice(-3)
+                .concat(('000'+ll).slice(-3))
+                .concat(('000'+lg).slice(-3))
+                .concat(res)
+            complement.decoupe(res,ll)
+            .forEach((fe:string) => {
+                let ss = fe.concat(' '.repeat(ll)).slice(0,ll)
+                code.push(line.slice(0,ii).concat(ss).concat(line.slice(ii+ll)))
+            })
+        }
+    }
+    return code
+}
+
+function varsToObject(vars:valorizedDictionnary):values {
+    let res:any = {}
+    vars.forEach((v:any) => {
+        if(v.var!==undefined) {
+            res[v.var] = v.value
+        } 
+        else if(v.grp!==undefined) {
+            let ores:any[] = []
+            if(v.occurrences!==undefined) {
+                v.occurrences.forEach((occ:any) => {
+                    ores.push(varsToObject(occ.values))
+                })
+            }
+            res[v.grp] = ores
+        }
+    })
+    return res
 }

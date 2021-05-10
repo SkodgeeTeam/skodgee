@@ -1,0 +1,42 @@
+# skodgee
+    { 
+        "name": "eX_For",
+        "description": "Nested for skeleton",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { 
+        "grp": "G1", 
+        "lib":"group G1",
+        "rpt":"0,5",
+        "cmp": [
+            { "var":"A", "lib":"variable A" },
+            { "var":"B", "lib":"variable B" }
+        ] 
+    },
+    { 
+        "grp": "G2",
+        "lib":"group G2",
+        "rpt":"0,5",
+        "cmp": [
+            { "var":"C", "lib":"variable C" },
+            { "var":"D", "lib":"variable D" }
+        ]
+    }    
+# end
+# experimental
+For every group G1
+# G1.forEach((G1_,G1_i,G1_array)=>{
+group G1 n°{{G1._i}}/{{G1._n}}
+#   if(G2.length > 0) {
+  For every group G2
+#     G2.forEach((G2_,G2_i,G2_array)=>{
+  group G2 n°{{G2_i}}/{{G2_array.length}}
+    A = {{G1_.A}}, B = {{G1_.B}}
+    C = {{G2_.C}}, D = {{G2_.D}}
+#     }
+#   }
+# }
