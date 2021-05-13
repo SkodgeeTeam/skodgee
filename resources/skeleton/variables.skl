@@ -1,0 +1,31 @@
+# skodgee
+    { 
+        "name": "Variables",
+        "description": "Variables et contrôles de valeurs",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "A", "lib": "variable A", 
+      "description":"cette variable est une chaine de caractère", 
+      "ini":"toto" },
+    { "var": "B", "lib": "variable B", 
+      "description":"celle-ci est un nombre", 
+      "ini":"0", "type":"numeric", "min":"0", "max":"6", "step":"2" },
+    { "var": "C", "lib": "variable C", 
+      "description":"chaine de 5 caractère contrôlé par pattern", 
+      "placeholder":"·····", "pattern":"\\w{5}" },
+    { "var": "D", "lib": "variable D", 
+      "description": "choisir la valeur dans la liste",
+      "opt":["1ère valeur","2ème valeur","3ème value"] }
+# end
+SKoDGee sample
+A = {{A}}
+B = {{B}}
+C = {{C}}
+D = {{D}}
+·····
+˽˽˽˽˽
+＿＿＿＿＿
