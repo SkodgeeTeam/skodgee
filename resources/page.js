@@ -211,22 +211,19 @@ generateInput = (e,parentName=undefined,value=undefined) => {
             input = document.createElement('input')
             input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
             input.id = lastId()
-            if(e.opt!==undefined) {
-                let datalist = document.createElement('datalist')
-                datalist.id = newId()
-                input.setAttribute('list',lastId())
-                e.opt.forEach( dl => {
-                    let option = document.createElement('option')
-                    option.value = dl
-                    datalist.appendChild(option)
-                })
-                res.push(datalist)
-            } else if(e.type!==undefined) {
+            if(e.min!==undefined || e.max!==undefined || e.step!==undefined) {
+                input.type = "number"
+                if(e.min) input.min=e.min
+                if(e.max) input.max=e.max
+                if(e.step) input.step=e.step
+            }
+            else if(e.type!==undefined) {
                 if(e.type==='numeric') {
                     input.pattern = "^((?:[+-])?\\d+(?:\\.\\d*)?)$"
-                } else if(e.pattern!==undefined) {
-                    input.pattern = e.pattern
                 }
+            } 
+            else if(e.pattern!==undefined) {
+                input.pattern = e.pattern
             }
             if(e.placeholder!==undefined) {
                 input.placeholder = e.placeholder

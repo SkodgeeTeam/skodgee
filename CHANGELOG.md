@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.0.11] - 2021-05-12
+
+- Nouveaux contrôles de surface dans le formulaire avec les champs `min`, `max`, `step`, `type`, `pattern` pouvant être ajouté
+dans la déclaration de varibales du dictionnaire ; ajout également du champ `description` pour la génération d'une info-bulle et
+du champ `placeholder` pour l'affichage d'une information dans les champs vides.
+
 ## [0.0.10] - 2021-05-10
 
 - Plus de plantage sur la directive if quand on tentait de tester la variable d'indice de la directive for qui la précédait
@@ -15,8 +21,8 @@ d'avoir la visibilité sur toutes les valeurs possibles.
 
 ## [0.0.8]
 
-- Il n'est plus tenté de résoudre à tort des variables appelées dans les directives repeat 
-non vérifiées (repeat contenu dans if sur condition fausse, dans for sur groupe vide, dans un repeat zéro) 
+- Il n'est plus tenté de résoudre à tort des variables appelées dans les directives repeat
+non vérifiées (repeat contenu dans if sur condition fausse, dans for sur groupe vide, dans un repeat zéro)
 ce qui pouvait provoquer des erreurs de génération.
 
 ## [0.0.7]
@@ -40,12 +46,12 @@ pour plus de précisions.
 - Correction d'une anomalie dans la génération du formulaire quand on faisait appel à un squelette par include et que ce
 squelette inclu ne contenait aucun paramètre
 - Mise au point de squelettes de test supplémentaires dans le répertoire resources/skeleton
-- On abandonne (déjà!) la double documentation en français et en anglais. On va plutôt se concentrer sur la qualité de la documentation 
+- On abandonne (déjà!) la double documentation en français et en anglais. On va plutôt se concentrer sur la qualité de la documentation
 en français. Si quelqu'un souhaite en assurer la traduction, il sera accueuillie comme il se doit.
 
 ## [0.0.3]
 
-- Dans les préférences, ajout d'un `User mode` pour choisir entre le `mode utilisateur` et le `mode développeur`. 
+- Dans les préférences, ajout d'un `User mode` pour choisir entre le `mode utilisateur` et le `mode développeur`.
 Le premier permet à l'utilisateur de générer des documents avec SKodgee. Le second est réservé à la mise au point et l'évolution de squelettes.
 Très peu de différences entre ces 2 modes, mais cela pourra être enrichi. Dans le mode utilisateur, l'interface ne montre pas le squelette.
 - L'emplacement des squelettes paramétré dans les préférences était unique ; si on voulait changer de collection de squelettes, il fallait
