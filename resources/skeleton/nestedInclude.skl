@@ -1,6 +1,6 @@
 # skodgee
     { 
-        "name": "Include",
+        "name": "Nested Include",
         "description": "Squelette appelant des squelettes",
         "author": "herve.heritier",
         "version": "0.0.0",
@@ -9,8 +9,7 @@
 # end
 # declare
     { "grp":"premier", "include":"skeletonWithoutParameters.skl" },
-    { "grp":"second", "include":"variables.skl" },
-    { "grp":"troisieme", "include":"nestedInclude.skl" }
+    { "grp":"second", "include":"variables.skl" }
 # end
 Ci-dessous le contenu affichable d'un squelette appelé par include
 ------------------------------------------------------------------
@@ -19,8 +18,4 @@ Ci-dessous le contenu affichable d'un squelette appelé par include
 Un second contenu provenant d'un autre include
 ------------------------------------------------------------------
 # include {{second}}
-------------------------------------------------------------------
-Un troisième qui appelle un squelette appelant des squelettes ?
-------------------------------------------------------------------
-# include {{troisieme}}
 ------------------------------------------------------------------

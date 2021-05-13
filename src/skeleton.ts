@@ -1143,3 +1143,27 @@ export async function resolveModels(skeletonSourceText:string) {
     })
     return resultLines.join('\n')
 }
+
+export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
+    let values:any = []
+    dictionnary.forEach((d:variableObject|groupObject)=>{
+        if((d as variableObject).var!==undefined) {
+            if((d as variableObject).ini!==undefined) {
+                values.push((d as variableObject).ini)
+            }
+            else {
+                values.push((d as variableObject).var)
+            }
+        } else if((d as groupObject).grp!==undefined) {
+            let groups:any = []
+            let count = (d as groupObject).rpt===undefined ? 1 : parseInt((d as groupObject).rpt?.split(',')[0] as string)
+            let group = generateValuesFromDictionnary((d as groupObject).cmp)
+            while(count>0) {
+                groups.push(Array.from(group))
+                count--
+            }
+            values.push(groups)
+        }
+    })
+    return values
+}

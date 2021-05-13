@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
+import * as http from 'http'
 
 /**
  * Retourne le dernier élément du tableau pour lequel la fonction fournie est vraie
@@ -170,4 +171,23 @@ export function searchCircularReference(t:Array<any>):any {
         }
         return { found:false }
     }
+}
+
+/**
+ * Permet l'appel d'un service http
+ * @param request url du service
+ * @returns promesse retournant la réponse si ok, l'anomalie si ko
+ */
+export function service(request:any):Promise<any> {
+    return new Promise((resolve,reject)=>{
+        let data = ''
+        http.get(request,(res)=>{ 
+            if(res.statusCode!==200) {
+                reject(res)
+                res.resume()
+            }
+            res.on('data',c=>data+=c)
+            res.on('close',()=>resolve(data))
+        })
+    })
 }

@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.0.12] - 2021-05-13
+
+- Les groupes ne contenant pas de variables ne sont plus affichés dans le formulaire de saisie.
+- Dans une formulaire qui n'a pas été obtenue par analyse d'un document, un groupe répété contient maintenant
+son nombre minimum d'occurrence (zéro ou plus); ce n'était pas le cas avant, il y avait toujours
+au moins une occurrence affichée pour les groupes dont le nombre minimum était de zéro.
+
 ## [0.0.11] - 2021-05-12
 
 - Nouveaux contrôles de surface dans le formulaire avec les champs `min`, `max`, `step`, `type`, `pattern` pouvant être ajouté

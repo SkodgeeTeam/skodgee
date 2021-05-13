@@ -66,6 +66,12 @@ document.querySelector('#generateCode').addEventListener('click',e=>{
     })
 })
 
+/*document.querySelector('#mock').addEventListener('click',e=>{
+    vscode.postMessage({
+        command:'mock'
+    })
+})*/
+
 document.querySelector('#getCode').addEventListener('click', e => {
     vscode.postMessage({command:'editGeneratedCodeInNewEditor',generatedCode:generatedCode})
 })
@@ -73,6 +79,9 @@ document.querySelector('#getCode').addEventListener('click', e => {
 window.addEventListener('message', e => {
     const message = e.data
     switch(message.command) {
+        /*case 'mock':
+            document.querySelector('#expansed').value = message.data
+            break*/
         case 'message':
             document.querySelector('#expansed').value = message.message
             break
@@ -260,6 +269,11 @@ generateInput = (e,parentName=undefined,value=undefined) => {
 }
 
 generateGroup = (e,parentName=undefined,values=undefined) => {
+
+    // ne pas créer de groupe vide (comme les includes sans variables)
+    if(e.cmp.length===0) return []
+    //
+    
     if(e.grp===undefined) return []
 
     let divGroup = document.createElement('div')
