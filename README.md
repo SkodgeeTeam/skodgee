@@ -162,7 +162,9 @@ avec pour un objet groupe
 - `"cmp"` : tableau des objets qui composent le groupe. Peut contenir un mix d'objets variables et d'objets groupes sans limitation de profondeur
 - `"include"` : nom d'un fichier squelette qui pourra être appelé dans le corps du squelette avec la directive `include`
 
-Dans un même groupe on ne peut pas avoir à la fois les champs `"cmp"` et `"include"` au même niveau, mais dans un champ `"cmp"` on peut avoir des objets variables, des objets groupes avec champ `"cmp"` et des objets groupes avec champ `"include"`
+Dans un même groupe on ne peut pas avoir à la fois les champs `"cmp"` et `"include"` au même niveau,
+mais dans un champ `"cmp"` on peut avoir des objets variables, des objets groupes avec champ `"cmp"` et des objets groupes avec champ `"include"`.
+Les champs `"rpt"` et `"include"` ne peuvent pas non plus être présents au même niveau dans un groupe.
 
 ### Corps du squelette
 
@@ -376,14 +378,17 @@ sans le connaître. Ceci peut arriver si on fait appel par include à un squelet
 
 #### 🡆 Définition et utilisation de modèles
 
-La directive `model` permet de déclarer un ensemble de lignes réutilisables et de lui associer un nom pour pouvoir le rappeler avec la directive `usemodel`. La déclaration d'un ensemble se fait entre les directives `model` et  `endmodel`.
+La directive `model` permet de déclarer un ensemble de lignes réutilisables et de lui associer un nom pour pouvoir le rappeler avec la directive `usemodel`.
+La déclaration d'un ensemble se fait entre les directives `model` et  `endmodel`.
 
     # model nomDuModele
     ces lignes forment le 
     modèle nommé nomDuModele
     # endmodel
 
-Une directive `model` ne peut être imbriquée dans une autre directive `model`, mais elle peut être déclarée dans tout squelette, même dans un squelette appelé par la directive `include`. De plus, dans un modèle, on peut appeler un squelette, mais ni ce squelette, ni tout squelette inclu dans ce squelette ne peut déclarer un modèle puisque l'imbrication de modèle n'est pas autorisée.
+Une directive `model` ne peut être imbriquée dans une autre directive `model`, mais elle peut être déclarée dans tout squelette,
+même dans un squelette appelé par la directive `include`. De plus, dans un modèle, on peut appeler un squelette, mais ni ce squelette,
+ni tout squelette inclu dans ce squelette ne peut déclarer un modèle puisque l'imbrication de modèle n'est pas autorisée.
 
 Si une directive `model` associe un nom identique à une directive `model` précédente, alors elle la remplace.
 

@@ -95,7 +95,8 @@ export async function activate(context: vscode.ExtensionContext) {
 							source: sourceAfterResolvedModels,
 							sourceBrut: resolvedValue.sourceBrut,
 							dictionnary: resolvedValue.dictionnary,
-							values: skeleton.extractValues(resolvedValue.dictionnary,[])				
+							//values: skeleton.extractValues(resolvedValue.dictionnary,[])				
+							values: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)			
 						})
 					},(reason)=>{
 						throw reason
@@ -126,6 +127,19 @@ export async function activate(context: vscode.ExtensionContext) {
 		panel.webview.onDidReceiveMessage(
 			message=>{
 				switch(message.command) {
+					/*case 'mock':
+						complement.service('http://localhost:1337').then(resolve=>{
+							panel.webview.postMessage({
+								command:'mock',
+								data:resolve
+							})	
+						},reason=>{
+							panel.webview.postMessage({
+								command:'mock',
+								data:reason
+							})	
+						})
+						break*/
 					case 'loadSkeleton':
 						{
 							try {
@@ -136,6 +150,9 @@ export async function activate(context: vscode.ExtensionContext) {
 								skeleton.extendDictionnaryWithIncludes(value.location,value.name)
 								.then((resolvedValue)=>{
 									let source = resolvedValue.sourceLines.join('\n')
+									let values = message.values!==undefined 
+										? skeleton.extractValues(resolvedValue.dictionnary,message.values)
+										: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)	
 									skeleton.resolveModels(source)
 									.then((sourceAfterResolvedModels)=>{
 										panel.webview.postMessage({
@@ -145,7 +162,7 @@ export async function activate(context: vscode.ExtensionContext) {
 											source: sourceAfterResolvedModels,
 											sourceBrut: resolvedValue.sourceBrut,
 											dictionnary: resolvedValue.dictionnary,
-											values: skeleton.extractValues(resolvedValue.dictionnary,message.values)
+											values: values
 										})
 									},(reason)=>{
 										panel.webview.postMessage({

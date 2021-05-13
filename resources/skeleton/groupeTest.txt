@@ -1,0 +1,11 @@
+SKoDGee sample
+
+A = A
+B = B
+C = C
+
+group G1 contains 0 sub-group SG1
+
+
+000079002{"sn":"group.skl","dt":"2021-05-13T14:34:37.948Z","data":"'A':'A','G1[
+0]>B':'B','G1[0]>C':'C'"}                                                      
