@@ -153,16 +153,34 @@ export async function activate(context: vscode.ExtensionContext) {
 									let values = message.values!==undefined 
 										? skeleton.extractValues(resolvedValue.dictionnary,message.values)
 										: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)	
-									skeleton.resolveModels(source)
-									.then((sourceAfterResolvedModels)=>{
-										panel.webview.postMessage({
-											command:'loadSkeletonOnSuccess',
-											name: value.name,
-											location: value.location,
-											source: sourceAfterResolvedModels,
-											sourceBrut: resolvedValue.sourceBrut,
-											dictionnary: resolvedValue.dictionnary,
-											values: values
+									skeleton.resolveParametricOptions(
+										message.values!==undefined
+										? skeleton.extendDictionnary(
+											resolvedValue.dictionnary,skeleton.populateDictionnary(
+												resolvedValue.dictionnary,message.values
+											)
+										) 
+										: resolvedValue.dictionnary
+									)
+									.then((resolvedDictionnary)=>{
+										skeleton.resolveModels(source)
+										.then((sourceAfterResolvedModels)=>{
+											panel.webview.postMessage({
+												command:'loadSkeletonOnSuccess',
+												name: value.name,
+												location: value.location,
+												source: sourceAfterResolvedModels,
+												sourceBrut: resolvedValue.sourceBrut,
+												dictionnary: resolvedDictionnary,
+												values: values
+											})
+										},(reason)=>{
+											panel.webview.postMessage({
+												command: 'loadSkeletonOnError',
+												error: reason,
+												log: dumpLog()
+											})
+											return
 										})
 									},(reason)=>{
 										panel.webview.postMessage({
@@ -236,6 +254,23 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 						}
 						break
+					case 'variableChangePropagation':
+						{
+							try {
+								skeleton.resolveParametricOptions(message.dictionnary)
+								.then(resolve=>{
+									panel.webview.postMessage({
+										command: 'afterVariableChanged',
+										name: message.name,
+										source: message.source,
+										dictionnary: message.dictionnary,
+										values: skeleton.varsToValues(message.dictionnary)	
+									})
+								})
+							} catch(error) {
+								vscode.window.showErrorMessage(error)
+							}
+						}
 				}
 			},
 			undefined,

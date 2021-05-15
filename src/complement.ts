@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
 import * as http from 'http'
+import * as https from 'https'
 
 /**
  * Retourne le dernier élément du tableau pour lequel la fonction fournie est vraie
@@ -181,13 +182,31 @@ export function searchCircularReference(t:Array<any>):any {
 export function service(request:any):Promise<any> {
     return new Promise((resolve,reject)=>{
         let data = ''
-        http.get(request,(res)=>{ 
-            if(res.statusCode!==200) {
-                reject(res)
-                res.resume()
-            }
-            res.on('data',c=>data+=c)
-            res.on('close',()=>resolve(data))
-        })
+        if(/^http:/.test(request)) {
+            http.get(request,(res)=>{ 
+                if(res.statusCode!==200) {
+                    reject(res)
+                    res.resume()
+                }
+                res.on('data',c=>data+=c)
+                res.on('close',()=>resolve(data))
+            }).on('error',(error)=>{
+                reject(error)
+            })
+        }
+        else if(/^https:/.test(request)) {
+            https.get(request,(res)=>{
+                if(res.statusCode!==200) {
+                    reject(res)
+                    res.resume()
+                }
+                res.on('data',c=>data+=c)
+                res.on('close',()=>resolve(data))
+            }).on('error',(error)=>{
+                reject(error)
+            })
+        } else {
+            reject('requete invalide')
+        }
     })
 }

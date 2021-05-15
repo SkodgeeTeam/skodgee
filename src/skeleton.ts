@@ -1,10 +1,19 @@
 import * as complement from './complement'
 import * as path from 'path'
 
+interface keyval {
+    key: string,
+    val: string
+}
+
 interface variableObject {
     var: string,
     lib?: string,
-    ini?: string
+    ini?: string,
+    opt?: string[],
+    remoteOpt?: string,
+    keyval?: keyval[],
+    remoteKeyval?: string
 }
 
 export interface valorizedVariableObject extends variableObject {
@@ -25,7 +34,8 @@ interface valorizedGroupObject extends groupObject {
     occurrence?: (valorizedGroupObject|valorizedVariableObject)[]
 }
 
-export type valorizedDictionnary = valorizedVariableObject[] | valorizedGroupObject[]
+//export type valorizedDictionnary = valorizedVariableObject[] | valorizedGroupObject[]
+export type valorizedDictionnary = (valorizedVariableObject|valorizedGroupObject)[]
 
 type values = (string|values)[]
 
@@ -583,7 +593,7 @@ function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, 
     return line
 }
 
-function varsToValues(vars:valorizedDictionnary):values {
+export function varsToValues(vars:valorizedDictionnary):values {
     let res:any[] = []
     vars.forEach((v:any) => {
         if(v.var!==undefined) {
@@ -781,6 +791,21 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
         if(search!==null) {
             return varSolve(search[1],vars,forStack,globalVars)
         }
+    }
+
+    {
+        // récupération de clé pour une variable simple ?
+        let search = /^([^_]+)__key$/.exec(variable)
+        if(search!==null) {
+            let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
+            if(varDeclaration!==undefined) {    
+                if(varDeclaration.keyval!==undefined) {
+                    let keyval = varDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
+                    return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+                }
+            }
+        }
+        
     }
 
     // recherche variable locale
@@ -1036,7 +1061,29 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
     while(true) {
         if(d>=dictionnary.length) break
         const definition = dictionnary[d]
-        if(definition.hasOwnProperty('grp')) {
+        if(definition.hasOwnProperty('var')) {
+            // tentative de récupération d'une liste de valeur par appel d'un service distant
+            // pas de blocage en cas d'échec du service
+            if(definition.hasOwnProperty('remoteOpt')) {
+                if(!/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
+                    try {
+                        (definition as variableObject).opt = JSON.parse(await complement.service((definition as variableObject).remoteOpt))
+                    } catch(error) {
+                        console.log(error)
+                    }
+                }
+            }
+            else if(definition.hasOwnProperty('remoteKeyval')) {
+                if(!/{{\w+}}/.test((definition as variableObject).remoteKeyval as string)) {
+                    try {
+                        (definition as variableObject).keyval = JSON.parse(await complement.service((definition as variableObject).remoteKeyval))
+                    } catch(error) {
+                        console.log(error)
+                    }
+                }
+            }
+        }
+        else if(definition.hasOwnProperty('grp')) {
             if(definition.hasOwnProperty('include')) {
                 // traiter un include
                 let fileName = (definition as groupObject).include
@@ -1166,4 +1213,67 @@ export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
         }
     })
     return values
+}
+
+export function variableChanged(variable:string,value:any):any {
+    return []
+}
+
+export async function resolveParametricOptions(dictionnary:valorizedDictionnary) {
+    // parcourir le dictionnaire
+    let d = 0
+    while(true) {
+        if(d>=dictionnary.length) break
+        const definition = dictionnary[d]
+        if((definition as variableObject).var!==undefined) {
+            if((definition as variableObject).remoteOpt!==undefined) {
+                if(/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
+                    let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,dictionnary,dictionnary)
+                    if(rs!==undefined) {
+                        if(rs.length>0) {
+                            try {
+                                (definition as variableObject).opt = JSON.parse(await complement.service(rs[0]))
+                            } catch(error) {
+                                (definition as variableObject).opt = undefined
+                            }
+                        }
+                    }
+                }                
+            }
+            else if((definition as variableObject).remoteKeyval!==undefined) {
+                if(/{{\w+}}/.test((definition as variableObject).remoteKeyval as string)) {
+                    let rs = resolveSkeleton("",(definition as variableObject).remoteKeyval,dictionnary,dictionnary)
+                    if(rs!==undefined) {
+                        if(rs.length>0) {
+                            try {
+                                (definition as variableObject).keyval = JSON.parse(await complement.service(rs[0]))
+                            } catch(error) {
+                                (definition as variableObject).keyval = undefined
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        d++
+    }
+    return dictionnary
+}
+
+export function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorizedDictionnary):valorizedDictionnary {
+    let d=0
+    while(true) {
+        if(d>=dictionnary.length) break
+        if((dictionnary[d] as valorizedVariableObject).var!==undefined) {
+            if((dic2[d] as valorizedVariableObject).var!==undefined) {
+                if((dictionnary[d] as valorizedVariableObject).var===(dic2[d] as valorizedVariableObject).var) {
+                    if((dic2[d] as valorizedVariableObject).value!==undefined) {
+                        (dictionnary[d] as valorizedVariableObject).value = (dic2[d] as valorizedVariableObject).value
+                    }
+                }
+            }
+        }
+        d++
+    }
+    return dictionnary
 }

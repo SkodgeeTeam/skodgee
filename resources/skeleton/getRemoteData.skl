@@ -1,0 +1,25 @@
+# skodgee
+    { 
+        "name": "Get Remote Data",
+        "description": "Variables attachées à des données distantes",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "table", "lib": "Table", "remoteOpt":"http://127.0.0.1:1337/optlist", "onchange":"propagate" },
+    { "var": "rubrique", "lib": "Rubrique", "remoteOpt":"http://127.0.0.1:1337/optlist?table={{table}}" },
+    { 
+        "grp":"groupe1", "rpt":"1,2", 
+        "cmp":[
+            { "var": "table", "lib": "Table", "remoteOpt":"http://127.0.0.1:1337/optlist", "onchange":"propagate" },
+            { "var": "rubrique", "lib": "Rubrique", "remoteOpt":"http://127.0.0.1:1337/optlist?table={{table}}" }
+        ]
+    }
+# end
+SKoDGee sample
+Table = {{table}}
+Rubrique = {{rubrique}}
+# dictionnary dense
+_______________________________________________________________________________
