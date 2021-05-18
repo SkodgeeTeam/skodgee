@@ -131,6 +131,11 @@ let localVariables:Array<{name:string, value:number|string, type:localVariablesT
 export let nfoCurrentLine:string
 export let nfoCurrentIndex:number
 
+/**
+ * extrait le dictionnaire du squelette 
+ * @param skeletonSourceText source squelette 
+ * @returns dictionnary
+ */
 export function analyzeSkeleton(skeletonSourceText:string):dictionnary {
     let lines = skeletonSourceText.split('\n')
     let declare:string = ""
@@ -170,6 +175,14 @@ export function analyzeSkeleton(skeletonSourceText:string):dictionnary {
     return parsedDeclare
 }
 
+/**
+ * Génère le code à partir du squelette et du dictionnaire valorisé
+ * @param skeletonName nom du squelette
+ * @param source source du squelette
+ * @param vars dictionnaire valorisé
+ * @param dictionnary dictionnaire
+ * @returns array du code généré
+ */
 export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDictionnary,dictionnary:dictionnary):string[] {
 
     if(JSON.stringify(vars)!==JSON.stringify(dictionnary)) {
