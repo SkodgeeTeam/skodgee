@@ -1136,7 +1136,11 @@ export async function resolveModels(skeletonSourceText:string) {
         } else if((search=RGXusemodel.exec(e))!==null) {
             let model = modelStack.find(f=>f.name===search[2])
             if(model!==undefined) model.lines.forEach(l=>resultLines.push(l))
-            else throw(`le modèle ${search[2]} demandé en ligne ${i} n'est pas référencé`)
+            else throw(
+                `le modèle ${search[2]} demandé en ligne ${i} n'est pas référencé\n`+
+                `cause probable : \n`+
+                `- absence de directive include du squelette contenant le modèle`
+            )
         } else {
             resultLines.push(e)
         }
