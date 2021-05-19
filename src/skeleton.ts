@@ -807,8 +807,8 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
     }
 
     {
-        // récupération de clé pour une variable simple ?
-        let search = /^([^_]+)__key$/.exec(variable)
+        // récupération de la valeur d'une variable à partie de la clé sélectionnée dans une combo
+        let search = /^([^_]+)__value$/.exec(variable)
         if(search!==null) {
             if(prefix===undefined) {
                 let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])

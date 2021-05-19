@@ -3,7 +3,7 @@
   "displayName": "SKODGEE",
   "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
   "publisher": "skodgeeTeam",
-  "version": "0.0.13-x.1",
+  "version": "0.0.13-x.2",
   "engines": {
     "vscode": "^1.46.0"
   },

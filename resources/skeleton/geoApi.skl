@@ -14,14 +14,19 @@
         { "var": "commune", "lib": "Commune", "remoteKeyval":"http://127.0.0.1:1337/departements/{{departement}}/communes" }
     ], "rpt": "3,3" }
 # end
+
 Geo Api
-Région = {{region}} - {{region__key}}
-Département = {{departement}} - {{departement__key}}
+
+Région = {{region}} - {{region__value}}
+
+Département = {{departement}} - {{departement__value}}
+
 # defnum choix 0
 # for {{selection}}
 # calc choix {{__choix}} + 1
-Commune #{{__choix}} :  {{selection_commune}} - {{selection_commune__key}}
+Commune #{{__choix}} :  {{selection_commune}} - {{selection_commune__value}}
 # endfor
+
 # dictionnary dense
 _______________________________________________________________________________
 
