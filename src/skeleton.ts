@@ -1087,29 +1087,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
     while(true) {
         if(d>=dictionnary.length) break
         const definition = dictionnary[d]
-        /*if(definition.hasOwnProperty('var')) {
-            // tentative de récupération d'une liste de valeur par appel d'un service distant
-            // pas de blocage en cas d'échec du service
-            if(definition.hasOwnProperty('remoteOpt')) {
-                if(!/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
-                    try {
-                        (definition as variableObject).opt = JSON.parse(await complement.service((definition as variableObject).remoteOpt))
-                    } catch(error) {
-                        console.log(error)
-                    }
-                }
-            }
-            else if(definition.hasOwnProperty('remoteKeyval')) {
-                if(!/{{\w+}}/.test((definition as variableObject).remoteKeyval as string)) {
-                    try {
-                        (definition as variableObject).keyval = JSON.parse(await complement.service((definition as variableObject).remoteKeyval))
-                    } catch(error) {
-                        console.log(error)
-                    }
-                }
-            }
-        }
-        else*/ if(definition.hasOwnProperty('grp')) {
+        if(definition.hasOwnProperty('grp')) {
             if(definition.hasOwnProperty('include')) {
                 // traiter un include
                 let fileName = (definition as groupObject).include
