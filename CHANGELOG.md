@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.0.13] - 2021-05-19
+
+- L'injection de tous les formats de dictionnaires fonctionne alors que précédemment seul le format dense était correcte.  
+- Pour la mise au point d'un squelette, ajout d'un message de cause probable quand un modèle n'a pas été trouvé.
+
 ## [0.0.12] - 2021-05-13
 
 - Les groupes ne contenant pas de variables ne sont plus affichés dans le formulaire de saisie.

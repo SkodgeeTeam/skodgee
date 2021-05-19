@@ -37,3 +37,40 @@ Activate the command from the palette
 'SKoDGee - reverse from generated to dictionnary'
 to process, then modify data and generate again.
 
+Other different dictionnaries
+
+dictionnary dense64
+-------------------
+# dictionnary dense64
+__________________________________________________
+
+
+dictionnary compact
+-------------------
+# dictionnary compact
+__________________________________________________
+
+dictionnary compact64
+---------------------
+# dictionnary compact64
+__________________________________________________
+
+dictionnary standard
+--------------------
+# dictionnary standard
+__________________________________________________
+
+dictionnary base64
+------------------
+# dictionnary base64
+__________________________________________________
+
+dictionnary serialize
+---------------------
+# dictionnary serialize
+__________________________________________________
+
+dictionnary serialize64
+-----------------------
+# dictionnary serialize64
+__________________________________________________

@@ -276,6 +276,8 @@ export async function activate(context: vscode.ExtensionContext) {
 					if(o.data[0]!=='[') {
 						o.data = complement.revertBase64(o.data)
 						vscode.commands.executeCommand('skodgee.generation',o)
+					} else {
+						vscode.commands.executeCommand('skodgee.generation',o)
 					}
 				}
 			}

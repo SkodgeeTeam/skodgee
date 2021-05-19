@@ -320,7 +320,8 @@ Plusieurs formats disponibles pour la directive `dictionnary`
 - `dense` : plus léger que `serialize`, il contient les mêmes informations mais est moins pratique à décoder
 - `dense64` : identique à `dense` mais encodée en base64  
 
- > Tous les formats sont réinjectables à partir du code source généré pour remonter au squelette ; cependant les formats `compact` et `compact64` ne sont pas compatibles ascendant, c'est à dire que si des nouvelles rubriques ont été ajoutées ou retirées en milieu du
+ > Tous les formats sont réinjectables à partir du code source généré pour remonter au squelette ; cependant les formats `compact` et
+ `compact64` ne sont pas compatibles ascendant, c'est à dire que si des nouvelles rubriques ont été ajoutées ou retirées en milieu du
  dictionnaire alors l'injection va provoquer un décalage des valeurs. Les autres formats ne sont pas concernés par cette limitation
  parce qu'ils portent soit la description du dictionnaire d'origine (formats `standard` et `standard64`) soit le chemin des variables
  (formats `serialize`, `serialize64`, `dense` et `dense64`).
@@ -329,15 +330,12 @@ Les formats encodés en **base64** permettent d'embarquer le dictionnaire dans d
 
 _**Comparaison des formats**_
 
-<table>
-<thead><tr><th></th><th>ratio taille</th><th>évolution dictionnaire</th><th>human friendly</th><th>computer friendly</th></thead>
-<tbody>
-<tr><td>standard</td><td>1</td><td>compatible</td><td>lourd</td><td>complet</td></tr>
-<tr><td>serialize</td><td>0.7</td><td>compatible</td><td>clair mais partiel</td><td>orienté data</td></tr>
-<tr><td>dense</td><td>0.4</td><td>compatible</td><td>clair mais partiel</td><td>peu pratique</td></tr>
-<tr><td>compact</td><td>0.15</td><td>limité</td><td>faible</td><td>imprécis</td></tr>
-</tbody>
-</table>
+|           | ratio taille | évolution dictionnaire | human friendly     | computer friendly |
+|:-         |-:            |:-                      |:-                  |:-                 |
+| standard  | 1.00         | compatible             | lourd              | complet           |
+| serialize | 0.70         | compatible             | clair mais partiel | orienté data      |
+| dense     | 0.40         | compatible             | clair mais partiel | peu pratique      |
+| compact   | 0.15         | limité                 | faible             | imprécis          |
   
 -**Exemple d'implantation et de restitution**_
 
