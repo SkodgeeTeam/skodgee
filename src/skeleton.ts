@@ -657,7 +657,7 @@ function repeatSolve(variable:any,vars:valorizedDictionnary,forStack:forStack):a
     return varSolve(variable,vars,forStack,vars)
 }
 
-function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, globalVars:valorizedDictionnary, prefix:any=undefined):any {
+function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, globalVars:valorizedDictionnary, prefix:any=undefined,prefixCmp:dictionnary|undefined=undefined):any {
 
     if(globalVars===undefined) globalVars=vars
 
@@ -810,11 +810,24 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
         // récupération de clé pour une variable simple ?
         let search = /^([^_]+)__key$/.exec(variable)
         if(search!==null) {
-            let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
-            if(varDeclaration!==undefined) {    
-                if(varDeclaration.keyval!==undefined) {
-                    let keyval = varDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
-                    return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+            if(prefix===undefined) {
+                let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
+                if(varDeclaration!==undefined) {    
+                    if(varDeclaration.keyval!==undefined) {
+                        let keyval = varDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
+                        return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+                    }
+                }
+            } else {
+                let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
+                if(varDeclaration!==undefined) {    
+                    let cmpDeclaration = (prefixCmp as Array<any>).find(v=>v.var!==undefined ? v.var===(search as RegExpExecArray)[1] : false)
+                  if(cmpDeclaration!==undefined) {    
+                        if(cmpDeclaration.keyval!==undefined) {
+                            let keyval = cmpDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
+                            return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+                        }
+                    }
                 }
             }
         }
@@ -898,7 +911,7 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
             // cas particulier de la variable nombre d'occurrences d'un groupe
             // alors que l'on est pas dans une boucle for
             if(fsi===undefined && search[2]==='_n') return { type:"str", value:grpDeclaration.occurrences!==undefined ? grpDeclaration.occurrences.length : 0 }
-            return varSolve(search[2],grpDeclaration.occurrences[occurrenceIndex].values,forStack,globalVars,searchGrp)
+            return varSolve(search[2],grpDeclaration.occurrences[occurrenceIndex].values,forStack,globalVars,searchGrp,grpDeclaration.cmp)
         }
     } else {
         // variable simple, c'est peut-être un groupe
@@ -1074,7 +1087,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
     while(true) {
         if(d>=dictionnary.length) break
         const definition = dictionnary[d]
-        if(definition.hasOwnProperty('var')) {
+        /*if(definition.hasOwnProperty('var')) {
             // tentative de récupération d'une liste de valeur par appel d'un service distant
             // pas de blocage en cas d'échec du service
             if(definition.hasOwnProperty('remoteOpt')) {
@@ -1096,12 +1109,12 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
                 }
             }
         }
-        else if(definition.hasOwnProperty('grp')) {
+        else*/ if(definition.hasOwnProperty('grp')) {
             if(definition.hasOwnProperty('include')) {
                 // traiter un include
                 let fileName = (definition as groupObject).include
                 if(fileName!==undefined) {
-                    // vérifier que le nouvel include ne pose pas un lien qui provoque une référence circualire
+                    // vérifier que le nouvel include ne pose pas un lien qui provoque une référence circulaire
                     liens.push([skeletonName,fileName])
                     let scr = complement.searchCircularReference(liens)
                     if(scr.found===true) {
@@ -1111,7 +1124,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
                     let edwi = await extendDictionnaryWithIncludes(skeletonLocations,fileName,liens)
                     let dico:dictionnary = edwi.dictionnary
                     ;(definition as groupObject).cmp = [...dico]
-                    // remplacer les includes correspondants par le suqlette encadré par les directives # path et # endpath
+                    // remplacer les includes correspondants par le squelette encadré par les directives # path et # endpath
                     let lines:string[] = []
                     bodyLines.forEach((e:any) => {
                         let search = RGXinclude.exec(e)
@@ -1236,7 +1249,8 @@ export function variableChanged(variable:string,value:any):any {
     return []
 }
 
-export async function resolveParametricOptions(dictionnary:valorizedDictionnary) {
+export async function resolveParametricOptions(dictionnary:valorizedDictionnary,fullDictionnary:valorizedDictionnary|undefined=undefined) {
+    if(fullDictionnary===undefined) fullDictionnary=dictionnary
     // parcourir le dictionnaire
     let d = 0
     while(true) {
@@ -1244,8 +1258,8 @@ export async function resolveParametricOptions(dictionnary:valorizedDictionnary)
         const definition = dictionnary[d]
         if((definition as variableObject).var!==undefined) {
             if((definition as variableObject).remoteOpt!==undefined) {
-                if(/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
-                    let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,dictionnary,dictionnary)
+                if(!/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
+                    let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,fullDictionnary,fullDictionnary)
                     if(rs!==undefined) {
                         if(rs.length>0) {
                             try {
@@ -1258,19 +1272,20 @@ export async function resolveParametricOptions(dictionnary:valorizedDictionnary)
                 }                
             }
             else if((definition as variableObject).remoteKeyval!==undefined) {
-                if(/{{\w+}}/.test((definition as variableObject).remoteKeyval as string)) {
-                    let rs = resolveSkeleton("",(definition as variableObject).remoteKeyval,dictionnary,dictionnary)
-                    if(rs!==undefined) {
-                        if(rs.length>0) {
-                            try {
-                                (definition as variableObject).keyval = JSON.parse(await complement.service(rs[0]))
-                            } catch(error) {
-                                (definition as variableObject).keyval = undefined
-                            }
+                let rs = resolveSkeleton("",(definition as variableObject).remoteKeyval,fullDictionnary,fullDictionnary)
+                if(rs!==undefined) {
+                    if(rs.length>0) {
+                        try {
+                            (definition as variableObject).keyval = JSON.parse(await complement.service(rs[0]))
+                        } catch(error) {
+                            (definition as variableObject).keyval = undefined
                         }
                     }
                 }
             }
+        } 
+        else if((definition as groupObject).grp!==undefined) {
+            (definition as groupObject).cmp = await resolveParametricOptions((definition as groupObject).cmp,fullDictionnary)
         }
         d++
     }

@@ -10,12 +10,18 @@
 # declare
     { "var": "region", "lib": "Région", "remoteKeyval":"http://127.0.0.1:1337/regions", "onchange":"propagate" },
     { "var": "departement", "lib": "Département", "remoteKeyval":"http://127.0.0.1:1337/regions/{{region}}/departements", "onchange":"propagate" },
-    { "var": "commune", "lib": "Commune", "remoteKeyval":"http://127.0.0.1:1337/departements/{{departement}}/communes" }
+    { "grp": "selection", "lib": "Communes choisies", "cmp":[
+        { "var": "commune", "lib": "Commune", "remoteKeyval":"http://127.0.0.1:1337/departements/{{departement}}/communes" }
+    ], "rpt": "3,3" }
 # end
 Geo Api
 Région = {{region}} - {{region__key}}
 Département = {{departement}} - {{departement__key}}
-Commune = {{commune}} - {{commune__key}}
+# defnum choix 0
+# for {{selection}}
+# calc choix {{__choix}} + 1
+Commune #{{__choix}} :  {{selection_commune}} - {{selection_commune__key}}
+# endfor
 # dictionnary dense
 _______________________________________________________________________________
 
