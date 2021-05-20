@@ -8,27 +8,46 @@
                                          │
                                          ↓     ╭────◂────╮
                            ╭─────────────┴─────┴──────╮  │
-    extension →            │  message "bindSkeleton"  │  ▴        → webview
+    extension →            │  message "bindSkeleton"  │  ↑            → webview
                            ╰─────────────┬─────┬──────╯  │
                                          ↓     ╰─────▸───╯
                                          │
                          ╭───────────────┴───────────────╮
-    webview   →          │    message "loadSkeleton"     │        → extension
+    webview   →          │    message "loadSkeleton"     │            → extension
                          ╰───────────────┬───────────────╯
                                          ├──────────────────────────────────────────┐
                                          ↓                                          ↓
                     ╭────────────────────┴───────────────────╮   ╭──────────────────┴───────────────────╮
     extension →     │    message "loadSkeletonOnSuccess"     │   │    message "loadSkeletonOnError"     │   → webview
                     ╰────────────────────┬───────────────────╯   ╰──────────────────┬───────────────────╯
-                                         ↓                                        ──┴──
+                                         ├──────────◂───────────╮                 ──┴──
+                                         ↓                      |
+                    ╭────────────────────┴───────────────────╮  │
+    webview   →     │   message "variableChangePropagation"  │  │     → extension
+                    ╰────────────────────┬───────────────────╯  │
+                                         ↓                      ↑
+                       ╭─────────────────┴────────────────╮     │
+    extension →        │  message "afterVariableChanged"  │     │     → webview
+                       ╰─────────────────┬──────────┬─────╯     │
+                                         ↓          ╰─────▸─────╯
+                                         │
                          ╭───────────────┴───────────────╮
-    webview   →          │   message "resolveSkeleton"   │        → extension
+    webview   →          │   message "resolveSkeleton"   │            → extension
                          ╰───────────────┬───────────────╯
                                          ├──────────────────────────────────────────┐
                                          ↓                                          ↓
                     ╭────────────────────┴───────────────────╮   ╭──────────────────┴───────────────────╮
     extension →     │   message "resolveSkeletonOnSuccess"   │   │   message "resolveSkeletonOnError"   │   → webview
-                    ╰────────────────────────────────────────╯   ╰──────────────────────────────────────╯
+                    ╰────────────────────┬───────────────────╯   ╰──────────────────────────────────────╯
+                                         ↓                                        ──┴──
+                   ╭─────────────────────┴──────────────────────╮
+    webview   →    |   message "editGeneratedCodeInNewEditor"   │  → extension
+                   ╰─────────────────────┬──────────────────────╯
+                                         ↓
+                      ╭──────────────────┴───────────────────╮ 
+    extension →       | ouverture d'un nouvel onglet avec le |
+                      |      contenu du document généré      | 
+                      ╰──────────────────────────────────────╯
 
 ## Cinématique "revenir au squelette"
 
@@ -42,7 +61,7 @@
                                          │
                                          ↓     ╭────◂────╮
                            ╭─────────────┴─────┴──────╮  │
-    extension →            │  message "bindSkeleton"  │  ▴        → webview
+    extension →            │  message "bindSkeleton"  │  ↑        → webview
                            ╰─────────────┬─────┬──────╯  │
                                          ↓     ╰─────▸───╯
                                          │
@@ -169,12 +188,18 @@ initiales qui sont soit celles codées dans le dictionnaire, soit le nom de la v
 
 ### afterVariableChanged
 
+Ce message est émis pour répondre au message 'variableChangePropagation' émis par
+le webview.
+
+Le message retourne un dictionnaire dont les variables dépendantes peuvent avoir été
+mises à jour après résolution de leurs paramètres de valorisation.
+
     {
         command: 'afterVariableChanged',
-        name: message.name,
-        source: message.source,
-        dictionnary: message.dictionnary,
-        values: skeleton.varsToValues(message.dictionnary)
+        name: nom du squelette,
+        source: source du squelette,
+        dictionnary: dictionnaire après résolution des paramètres,
+        values: valeurs
     }
 
 ## Messages émis par le webview, traités par l'extension
@@ -204,6 +229,21 @@ initiales qui sont soit celles codées dans le dictionnaire, soit le nom de la v
     réponses possibles : 
     - resolveSkeletonOnSuccess
     - resolveSkeletonOnError
+
+### variableChangePropagation
+
+Ce message est émis à chaque fois qu'une variable mère de dépendances sur d'autres
+variable change de valeur. Le but est de recevoir en retour un dictionnaire sur lequel
+aura été appliqué pour chaque variables dépendantes la résolution de leurs valeurs.
+
+    {
+        command:"variableChangePropagation",
+        variable:variable dont la valeur a changé,
+        value:nouvelle valeur de la variable,
+        name:nom du squelette,
+        sourcesource du squelette,
+        dictionnary:dictionnaire valorisé avec les saisies
+    }
 
 ## Formats
 
