@@ -1,19 +1,46 @@
 import * as complement from './complement'
 import * as path from 'path'
+import { Url } from 'node:url'
 
 interface keyval {
     key: string,
     val: string
 }
 
+interface serviceOpt {
+    service: string,
+    array?: string,
+    opt: string,
+    params?: string[]
+}
+
+interface serviceKeyval {
+    service: string,
+    array?: string,
+    key: string,
+    val: string,
+    params?: string[]
+}
+
+interface serviceValuate {
+    service: string,
+    value: string,
+    params?: string[]
+}
+
 interface variableObject {
     var: string,
     lib?: string,
     ini?: string,
+    hidden?: string,
     opt?: string[],
     remoteOpt?: string,
     keyval?: keyval[],
-    remoteKeyval?: string
+    remoteKeyval?: string,
+    serviceOpt?: serviceOpt,
+    serviceKeyval?: serviceKeyval,
+    serviceValuate?: serviceValuate,
+    onchange?: string
 }
 
 export interface valorizedVariableObject extends variableObject {
@@ -70,11 +97,21 @@ interface formatObject {
 
 type formatStack = formatObject[]
 
+interface service {
+    service: string,
+    url: string,
+    params: {var:string}[],
+    response: any
+}
+
+type services = service[]
+
 const prefix = '^\\s*#'
 const prefixInDeclare = false
 
 const RGXskodgee = /^#\s?skodgee\s*$/
 const RGXcomment = new RegExp(prefix)
+const RGXservice = new RegExp(prefix.concat('\\s*(service)\\s*$'))
 const RGXdeclare = new RegExp(prefix.concat('\\s*(declare)\\s*$'))
 const RGXinDeclare = new RegExp( prefixInDeclare ? prefix.concat('\\s*(.*)') : '\\s*(.*)')
 const RGXend = new RegExp(prefix.concat('\\s*(end)\\s*$'))
@@ -195,6 +232,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
     }
 
     let inSkodgee:boolean = false
+    let inService:boolean = false
     let inDeclare:boolean = false
     let ifStack:ifStack = []
     let forStack:forStack = []
@@ -232,6 +270,23 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         // debut d'un skodgee ?
         if(RGXskodgee.exec(line)!==null) {
             inSkodgee = true
+            sourceIndex++
+            continue exploration
+        }
+
+        // dans le service ?
+        if(inService===true) {
+            // fin di service ?
+            if(RGXend.exec(line)!==null) {
+                inService = false
+            }
+            sourceIndex++
+            continue exploration
+        }
+
+        // debut de service ?
+        if(RGXservice.exec(line)!==null) {
+            inService = true
             sourceIndex++
             continue exploration
         }
@@ -490,7 +545,8 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
-            let value = eval(rl)
+            //let value = eval(rl)
+            let value = Function(`"use strict";return (${num})`)()
             localVariables.push({name:searchDefine[2],value:value,type:localVariablesType.number})
             sourceIndex++
             continue exploration
@@ -528,7 +584,8 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                             `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                         ))
                     }
-                    lv.value = eval(num)    
+                    //lv.value = eval(num)    
+                    lv.value = Function(`"use strict";return (${num})`)()
                 } else {
                     let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName)
                     lv.value = rl    
@@ -1227,7 +1284,42 @@ export function variableChanged(variable:string,value:any):any {
     return []
 }
 
-export async function resolveParametricOptions(dictionnary:valorizedDictionnary,fullDictionnary:valorizedDictionnary|undefined=undefined) {
+export function getServices(source:string) {
+    let sourceLines = source.split(/\r\n|\n/)
+    let sourceIndex = 0
+    let inService = false
+    let serviceLines = []
+    while(true) {
+        let line = sourceLines[sourceIndex]
+        if(sourceIndex>=sourceLines.length) break
+        if(inService===true) {
+            if(RGXend.test(line)) break
+            serviceLines.push(line)
+        }
+        if(RGXservice.test(line)) inService=true
+        sourceIndex++
+    }
+    if(serviceLines.length===0) return undefined
+    try {
+        return JSON.parse(`[${serviceLines.join('')}]`)
+    } catch(error) {
+        throw(`${error.toString()}\n${serviceLines.join('\n')}`)
+    }
+}
+
+/**
+ * 
+ * @param dictionnary 
+ * @param fullDictionnary 
+ * @param services 
+ * @returns
+ */
+export async function resolveParametricOptions( dictionnary:valorizedDictionnary,
+                                                fullDictionnary:valorizedDictionnary|undefined=undefined,
+                                                services:services|undefined=undefined,
+                                                variable:string|string[]|undefined=undefined,
+                                                value:string|undefined=undefined) {
+    variable = variable!==undefined ? Array.isArray(variable) ? variable : [variable] : []
     if(fullDictionnary===undefined) fullDictionnary=dictionnary
     // parcourir le dictionnaire
     let d = 0
@@ -1236,18 +1328,16 @@ export async function resolveParametricOptions(dictionnary:valorizedDictionnary,
         const definition = dictionnary[d]
         if((definition as variableObject).var!==undefined) {
             if((definition as variableObject).remoteOpt!==undefined) {
-                if(!/{{\w+}}/.test((definition as variableObject).remoteOpt as string)) {
-                    let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,fullDictionnary,fullDictionnary)
-                    if(rs!==undefined) {
-                        if(rs.length>0) {
-                            try {
-                                (definition as variableObject).opt = JSON.parse(await complement.service(rs[0]))
-                            } catch(error) {
-                                (definition as variableObject).opt = undefined
-                            }
+                let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,fullDictionnary,fullDictionnary)
+                if(rs!==undefined) {
+                    if(rs.length>0) {
+                        try {
+                            (definition as variableObject).opt = JSON.parse(await complement.service(rs[0]))
+                        } catch(error) {
+                            (definition as variableObject).opt = undefined
                         }
                     }
-                }                
+                }
             }
             else if((definition as variableObject).remoteKeyval!==undefined) {
                 let rs = resolveSkeleton("",(definition as variableObject).remoteKeyval,fullDictionnary,fullDictionnary)
@@ -1261,9 +1351,100 @@ export async function resolveParametricOptions(dictionnary:valorizedDictionnary,
                     }
                 }
             }
+            else if((definition as variableObject).serviceOpt!==undefined) {
+                let skv = (definition as variableObject).serviceOpt as serviceOpt
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response:any = JSON.parse(await complement.service(sv.url))
+                            ;(definition as variableObject).opt = complement.extractDotPath(skv.opt,response)
+                        } catch(error) {
+                            (definition as variableObject).opt = []
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).serviceKeyval!==undefined) {
+                let skv = (definition as variableObject).serviceKeyval as serviceKeyval
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response = JSON.parse(await complement.service(sv.url))
+                            if(skv.array!==undefined) {
+                                response = response.hasOwnProperty(skv.array) !==undefined ? response[skv.array] : response
+                            }
+                            (definition as variableObject).keyval = response.map( (rs:any) => { 
+                                let key = complement.extractDotPath(skv.key,rs)
+                                let val = complement.extractDotPath(skv.val,rs)
+                                return { key: key , val: val } 
+                            })
+                        } catch(error) {
+                            (definition as variableObject).keyval = undefined
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).serviceValuate!==undefined) {
+                let skv = (definition as variableObject).serviceValuate as serviceValuate
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response = JSON.parse(await complement.service(sv.url)) as any
+                            (definition as valorizedVariableObject).value = complement.extractDotPath(skv.value,response)
+                            if((definition as variableObject).onchange==="propagate") {
+                                variable.push((definition as variableObject).var)
+                            }
+                        } catch(error) {
+                            // ne rien faire
+                        }
+                    }
+                }
+            }
         } 
         else if((definition as groupObject).grp!==undefined) {
-            (definition as groupObject).cmp = await resolveParametricOptions((definition as groupObject).cmp,fullDictionnary)
+            (definition as groupObject).cmp = await resolveParametricOptions((definition as groupObject).cmp,fullDictionnary,services,variable,value)
         }
         d++
     }

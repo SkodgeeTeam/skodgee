@@ -153,6 +153,17 @@ export async function activate(context: vscode.ExtensionContext) {
 									let values = message.values!==undefined 
 										? skeleton.extractValues(resolvedValue.dictionnary,message.values)
 										: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)	
+									let services = undefined
+									try {
+										services = skeleton.getServices(source)
+									} catch(error) {
+										panel.webview.postMessage({
+											command: 'loadSkeletonOnError',
+											error : `le squelette contient des erreurs dans la déclaration des services :\n`+
+											`${error.toString()}`
+										})
+										return
+									}
 									skeleton.resolveParametricOptions(
 										message.values!==undefined
 										? skeleton.extendDictionnary(
@@ -160,7 +171,9 @@ export async function activate(context: vscode.ExtensionContext) {
 												resolvedValue.dictionnary,message.values
 											)
 										) 
-										: resolvedValue.dictionnary
+										: resolvedValue.dictionnary,
+										undefined,
+										services
 									)
 									.then((resolvedDictionnary)=>{
 										skeleton.resolveModels(source)
@@ -257,7 +270,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					case 'variableChangePropagation':
 						{
 							try {
-								skeleton.resolveParametricOptions(message.dictionnary)
+								skeleton.resolveParametricOptions(message.dictionnary,undefined,skeleton.getServices(message.source),message.variable,message.value)
 								.then(resolve=>{
 									panel.webview.postMessage({
 										command: 'afterVariableChanged',

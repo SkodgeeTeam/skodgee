@@ -1,0 +1,101 @@
+# skodgee
+    { 
+        "name": "Geo Api Codes Postaux",
+        "description": "Consultation de l'API Geo Découpage administratif",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# service
+    {
+        "service": "regions",
+        "url": "https://geo.api.gouv.fr/regions?fields=nom,code", 
+        "params": []
+    },
+    {
+        "service": "departements",
+        "url": "https://geo.api.gouv.fr/regions/{{regionKey}}/departements?fields=nom,code", 
+        "params": [ { "var":"regionKey" }]
+    },
+    {
+        "service": "communes",
+        "url": "https://geo.api.gouv.fr/departements/{{departementKey}}/communes?fields=nom,code,codesPostaux", 
+        "params": [ { "var":"departementKey" }]
+    },
+    {
+        "service": "codePostal",
+        "url": "https://geo.api.gouv.fr/communes?code={{communeKey}}&fields=codesPostaux", 
+        "params": [ { "var":"communeKey" }]
+    },
+    {
+        "service": "communesCP",
+        "url": "https://geo.api.gouv.fr/communes?codePostal={{codePostal}}&fields=nom", 
+        "params": [ { "var":"codePostal" }]
+    }
+# end
+# declare
+    { 
+        "var": "region", 
+        "lib": "Région",
+        "serviceKeyval": {
+            "service":"regions",
+            "key":"code",
+            "val":"nom"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "var": "departement",
+        "lib": "Département",
+        "serviceKeyval": {
+            "service": "departements",
+            "params": [ "{{region}}" ],
+            "key": "code",
+            "val": "nom"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "var": "commune", 
+        "lib": "Commune",
+        "serviceKeyval": {
+            "service": "communes",
+            "params": [ "{{departement}}" ],
+            "key": "code",
+            "val": "nom"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "var": "codePostal", 
+        "lib": "code postal",
+        "hidden": "",
+        "serviceValuate": {
+            "service": "codePostal",
+            "params": [ "{{commune}}" ],
+            "value": "[0].codesPostaux[0]"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "var": "communeCp", 
+        "lib": "Commune même CP",
+        "serviceOpt": {
+            "service": "communesCP",
+            "params": [ "{{codePostal}}" ],
+            "opt": "[].nom"
+        }
+    }
+# end
+
+Geo Api
+
+Région = {{region}} - {{region__value}}
+
+Département = {{departement}} - {{departement__value}}
+
+Commune = {{codePostal}} - {{communeCp}}
+
+# dictionnary dense
+_______________________________________________________________________________

@@ -1,0 +1,29 @@
+# skodgee
+    { 
+        "name": "Appel de api rest",
+        "description": "Exemple d'appel d'une api rest",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# service
+    {
+        "service": "bouchon",
+        "url": "http://127.0.0.1:1337/mock", 
+        "params": []
+    }
+# end
+# declare
+    { 
+        "var": "test", 
+        "serviceKeyval": {
+            "service":"bouchon",
+            "array":"content",
+            "key":"name",
+            "val":"value"
+        }
+    }
+# end
+
+{{test}}

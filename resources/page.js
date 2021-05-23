@@ -54,7 +54,9 @@ document.querySelector('#generateCode').addEventListener('click',e=>{
     document.querySelectorAll('#formulaire input,#formulaire select').forEach( inp => {
         res.push({ var:inp.name, value:inp.value })
     })
+    // réinitialise complètement le dictionnaire
     resetVars()
+    // réalimente le dictionnaire avec les variables du formulaire (variables cachées incluses)
     let data = cleanVars(encodeVars(res))
     document.querySelector('#expansed').value = JSON.stringify(data,null,4)
     vscode.postMessage({
@@ -208,6 +210,17 @@ generateForm = data => {
 }
 
 generateInput = (e,parentName=undefined,value=undefined) => {
+    if(e.hidden!==undefined) {
+        // les variables cachées ne sont pas visibles dans le formulaire
+        // mais elles sont quand même être créées pour
+        // que leur valeur soit récupérable pour la génération
+        let input = document.createElement('input')
+        input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+        input.id = lastId()
+        input.type="hidden"
+        input.value=value
+        return [input]
+    }
     let res = []
     if(e.var!==undefined) {
         let spanStatus = document.createElement('span')

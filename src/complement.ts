@@ -125,8 +125,6 @@ export async function getFirstFileFoundInMultipleLocations(locations:string[],fi
     return undefined
 }
 
-
-
 /**
  * Découpage d'une chaine en un tableau de chaines de longueur fixe
  * @param s chaine à découper
@@ -209,4 +207,45 @@ export function service(request:any):Promise<any> {
             reject('requete invalide')
         }
     })
+}
+
+/**
+ * Traduit le path fourni en valeur, objet ou tableau extrait de l'objet donné.
+ * Le path est un chaine qui reprend la notation standard utilisée pour accèder aux
+ * composants d'un objet JSON.
+ * Il est aussi possible d'utiliser la notation [] sans inclure d'indice pour récupérer
+ * la totalité des occurrences d'un tableau.
+ * @param dotPath 
+ * @param object 
+ * @returns 
+ */
+export function extractDotPath(dotPath:string,object:any) {
+    let inArray = false
+    let finalExtract = false
+    return dotPath.split('.').reduce((acc,v,i,o)=>{ 
+        if(finalExtract===true) return acc
+        if(acc===undefined) return undefined
+        if(inArray===true) {
+            finalExtract = true
+            let dp = o.slice(i-o.length).join('.')
+            let r = acc.map((e:any) => extractDotPath(dp,e)) 
+            return r
+        }
+        let search
+        if((search = /(\w+)\[\]/.exec(v)) !== null ) {
+            inArray = true
+            return acc[search[1]]
+        }
+        if((search = /(\w+)\[(\d+)\]/.exec(v)) !== null ) {
+            return acc[search[1]][parseInt(search[2])]
+        }
+        if((search = /\[\]/.exec(v)) !== null ) {
+            inArray = true
+            return Array.isArray(acc) ? acc : undefined
+        }
+        if((search = /\[(\d+)\]/.exec(v)) !== null ) {
+            return Array.isArray(acc) ? acc[parseInt(search[1])] : undefined
+        }
+        return acc[v]
+    },object)
 }

@@ -1,0 +1,81 @@
+# skodgee
+    { 
+        "name": "Geo Api Sampler",
+        "description": "Consultation de l'API Geo Découpage administratif",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# service
+    {
+        "service": "regions",
+        "url": "https://geo.api.gouv.fr/regions?fields=nom,code", 
+        "params": []
+    },
+    {
+        "service": "departements",
+        "url": "https://geo.api.gouv.fr/regions/{{regionKey}}/departements?fields=nom,code", 
+        "params": [ { "var":"regionKey" }]
+    },
+    {
+        "service": "communes",
+        "url": "https://geo.api.gouv.fr/departements/{{departementKey}}/communes?fields=nom,code", 
+        "params": [ { "var":"departementKey" }]
+    }
+# end
+# declare
+    { 
+        "var": "region", 
+        "lib": "Région",
+        "serviceKeyval": {
+            "service":"regions",
+            "key":"code",
+            "val":"nom"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "var": "departement",
+        "lib": "Département",
+        "serviceKeyval": {
+            "service": "departements",
+            "params": [ "{{region}}" ],
+            "key": "code",
+            "val": "nom"
+        },
+        "onchange":"propagate" 
+    },
+    { 
+        "grp": "selection", 
+        "lib": "Communes choisies", 
+        "cmp":[
+            { 
+                "var": "commune", 
+                "lib": "Commune",
+                "serviceKeyval": {
+                    "service": "communes",
+                    "params": [ "{{departement}}" ],
+                    "key": "code",
+                    "val": "nom"
+                }
+            }
+        ],
+        "rpt": "3,3" 
+    }
+# end
+
+Geo Api
+
+Région = {{region}} - {{region__value}}
+
+Département = {{departement}} - {{departement__value}}
+
+# defnum choix 0
+# for {{selection}}
+# calc choix {{__choix}} + 1
+Commune #{{__choix}} :  {{selection_commune}} - {{selection_commune__value}}
+# endfor
+
+# dictionnary dense
+_______________________________________________________________________________
