@@ -95,7 +95,6 @@ export async function activate(context: vscode.ExtensionContext) {
 							source: sourceAfterResolvedModels,
 							sourceBrut: resolvedValue.sourceBrut,
 							dictionnary: resolvedValue.dictionnary,
-							//values: skeleton.extractValues(resolvedValue.dictionnary,[])				
 							values: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)			
 						})
 					},(reason)=>{
@@ -127,19 +126,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		panel.webview.onDidReceiveMessage(
 			message=>{
 				switch(message.command) {
-					/*case 'mock':
-						complement.service('http://localhost:1337').then(resolve=>{
-							panel.webview.postMessage({
-								command:'mock',
-								data:resolve
-							})	
-						},reason=>{
-							panel.webview.postMessage({
-								command:'mock',
-								data:reason
-							})	
-						})
-						break*/
 					case 'loadSkeleton':
 						{
 							try {
@@ -164,17 +150,10 @@ export async function activate(context: vscode.ExtensionContext) {
 										})
 										return
 									}
-									skeleton.resolveParametricOptions(
-										message.values!==undefined
-										? skeleton.extendDictionnary(
-											resolvedValue.dictionnary,skeleton.populateDictionnary(
-												resolvedValue.dictionnary,message.values
-											)
-										) 
-										: resolvedValue.dictionnary,
-										undefined,
-										services
-									)
+									let dico = message.values!==undefined
+										? skeleton.extendDictionnaryWithPolymorphicValuesRepresentation(resolvedValue.dictionnary,message.values)
+										: resolvedValue.dictionnary
+									skeleton.resolveParametricOptions(dico,undefined,services)
 									.then((resolvedDictionnary)=>{
 										skeleton.resolveModels(source)
 										.then((sourceAfterResolvedModels)=>{

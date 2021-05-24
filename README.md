@@ -114,10 +114,10 @@ avec
 
 ### Catalogue des services
 
-Le catalogue des services est précédé d'un directive `service` et suivi d'une directive `end`. 
- Entre ces 2 lignes on retrouve une suite d'objets au format JSON séparés par une virgule.
- Cette partie est optionnelles.
-Chaque service est une déclaration de webapi.
+Le catalogue des services optionnel.  
+Quand il est présent, il est précédé d'un directive `service` et suivi d'une directive `end`.  
+Entre ces 2 lignes on retrouve une suite d'objets au format JSON séparés par une virgule,
+chaque objet servant à déclarer un service de type webapi REST.
 
 <!---->
     # service
@@ -131,6 +131,30 @@ Chaque service est une déclaration de webapi.
 - `"service"` : code du service pour utilisation dans le dictionnaire
 - `"url"` : url de webapi avec paramètres variabilisés par la notation double-moustaches
 - `"params"` : tableau des variables utilisées dans l'url
+
+#### Exemples de service
+
+Récupération de la liste des régions avec l'api geo
+
+- aucun paramètre à passer lors de l'appel de l'api
+
+<!---->
+    {
+        "service": "regions",
+        "url": "https://geo.api.gouv.fr/regions?fields=nom,code", 
+        "params": []
+    },
+
+Récupération d'une liste de communes rattachées à un code postal avec l'api geo
+
+- le code postal est passé en paramètre d'appel de l'api
+
+<!---->
+    {
+        "service": "communesCP",
+        "url": "https://geo.api.gouv.fr/communes?codePostal={{codePostal}}&fields=nom", 
+        "params": [{"var":"codePostal"}]
+    }
 
 ### Dictionnaire du squelette
 

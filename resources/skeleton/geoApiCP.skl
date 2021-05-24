@@ -97,5 +97,5 @@ Département = {{departement}} - {{departement__value}}
 
 Commune = {{codePostal}} - {{communeCp}}
 
-# dictionnary dense
+# dictionnary serialize
 _______________________________________________________________________________

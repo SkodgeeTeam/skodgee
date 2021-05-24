@@ -71,7 +71,7 @@ interface pathAndValueObject {
     value: string|number
 }
 
-type polymorphicValuesRepresentation = valorizedVariableObject[] | valorizedGroupObject[] | pathAndValueObject[]
+type polymorphicValuesRepresentation = valorizedVariableObject[] | valorizedGroupObject[] | pathAndValueObject[] | values
 
 interface ifObject {
     state: boolean,
@@ -1102,18 +1102,6 @@ function makeDensePathsAndValues(pathsAndValues:any[]):string {
     return densePathsAndValues(pathsAndValues).join('').slice(0,-1)
 }
 
-export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation) {
-    return Array.isArray(values) ?
-        values.length>0 ?
-            values[0] instanceof Object ?
-                (values[0] as pathAndValueObject).path!==undefined ?
-                    varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[])) :
-                varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary)))) :
-            values :
-        undefined :
-    undefined
-}
-
 function numberLines(text:string) {
     let ts = text.split('\n')
     let zs = '0'.repeat(ts.length.toFixed(0).length)
@@ -1467,4 +1455,43 @@ export function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorize
         d++
     }
     return dictionnary
+}
+
+export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation) {
+    return Array.isArray(values) ?
+        values.length>0 ?
+            values[0] instanceof Object ?
+                (values[0] as pathAndValueObject).path!==undefined ?
+                    varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[])) :
+                varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary)))) :
+            values :
+        undefined :
+    undefined
+}
+
+export function extendDictionnaryWithPolymorphicValuesRepresentation(dictionnary:dictionnary,values:polymorphicValuesRepresentation):dictionnary {
+    if(Array.isArray(values)) {
+        if((values as values).every(e=>Array.isArray(e)||(typeof e==='string'))) {
+            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,pathFromCompact(values,dictionnary)))
+        }
+        if((values as valorizedDictionnary).every((e:variableObject|groupObject)=>(e as variableObject).var!==undefined||(e as groupObject).grp!==undefined)) {
+            return extendDictionnary(dictionnary,values as valorizedDictionnary)
+        }
+        if((values as pathAndValueObject[]).every((e:pathAndValueObject)=>(e.path!==undefined&&e.value!==undefined))) {
+            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,values as pathAndValueObject[]))
+        }
+    }
+    return dictionnary
+}
+
+function pathFromCompact(values:Array<any>,dictionnary:dictionnary,path:string=""):pathAndValueObject[] {
+    let result:pathAndValueObject[] = []
+    dictionnary.forEach((d:variableObject|groupObject,i:number)=>{
+        if((d as groupObject).grp!==undefined) {
+            result = [...result,...pathFromCompact(values[i],(d as groupObject).cmp,`${path}${(d as groupObject).grp}[${i}]>`)]
+        } else {
+            result.push({ path:`${path}${(d as variableObject).var}`, value:`${values[i]}` })
+        }
+    })
+    return result
 }
