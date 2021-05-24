@@ -1,0 +1,6 @@
+Geo Api
+Région = 27 - Bourgogne-Franche-Comté
+Département = 39 - Jura
+Commune = 39014 - Archelange
+000079002{"sn":"geoApi.skl","dt":"2021-05-14T21:34:05.230Z","data":"'region':'2
+7','departement':'39','commune':'39014'"}                                      

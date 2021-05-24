@@ -1,10 +1,46 @@
 import * as complement from './complement'
 import * as path from 'path'
+import { Url } from 'node:url'
+
+interface keyval {
+    key: string,
+    val: string
+}
+
+interface serviceOpt {
+    service: string,
+    array?: string,
+    opt: string,
+    params?: string[]
+}
+
+interface serviceKeyval {
+    service: string,
+    array?: string,
+    key: string,
+    val: string,
+    params?: string[]
+}
+
+interface serviceValuate {
+    service: string,
+    value: string,
+    params?: string[]
+}
 
 interface variableObject {
     var: string,
     lib?: string,
-    ini?: string
+    ini?: string,
+    hidden?: string,
+    opt?: string[],
+    remoteOpt?: string,
+    keyval?: keyval[],
+    remoteKeyval?: string,
+    serviceOpt?: serviceOpt,
+    serviceKeyval?: serviceKeyval,
+    serviceValuate?: serviceValuate,
+    onchange?: string
 }
 
 export interface valorizedVariableObject extends variableObject {
@@ -25,7 +61,8 @@ interface valorizedGroupObject extends groupObject {
     occurrence?: (valorizedGroupObject|valorizedVariableObject)[]
 }
 
-export type valorizedDictionnary = valorizedVariableObject[] | valorizedGroupObject[]
+//export type valorizedDictionnary = valorizedVariableObject[] | valorizedGroupObject[]
+export type valorizedDictionnary = (valorizedVariableObject|valorizedGroupObject)[]
 
 type values = (string|values)[]
 
@@ -34,7 +71,7 @@ interface pathAndValueObject {
     value: string|number
 }
 
-type polymorphicValuesRepresentation = valorizedVariableObject[] | valorizedGroupObject[] | pathAndValueObject[]
+type polymorphicValuesRepresentation = valorizedVariableObject[] | valorizedGroupObject[] | pathAndValueObject[] | values
 
 interface ifObject {
     state: boolean,
@@ -60,11 +97,21 @@ interface formatObject {
 
 type formatStack = formatObject[]
 
+interface service {
+    service: string,
+    url: string,
+    params: {var:string}[],
+    response: any
+}
+
+type services = service[]
+
 const prefix = '^\\s*#'
 const prefixInDeclare = false
 
 const RGXskodgee = /^#\s?skodgee\s*$/
 const RGXcomment = new RegExp(prefix)
+const RGXservice = new RegExp(prefix.concat('\\s*(service)\\s*$'))
 const RGXdeclare = new RegExp(prefix.concat('\\s*(declare)\\s*$'))
 const RGXinDeclare = new RegExp( prefixInDeclare ? prefix.concat('\\s*(.*)') : '\\s*(.*)')
 const RGXend = new RegExp(prefix.concat('\\s*(end)\\s*$'))
@@ -121,6 +168,11 @@ let localVariables:Array<{name:string, value:number|string, type:localVariablesT
 export let nfoCurrentLine:string
 export let nfoCurrentIndex:number
 
+/**
+ * extrait le dictionnaire du squelette 
+ * @param skeletonSourceText source squelette 
+ * @returns dictionnary
+ */
 export function analyzeSkeleton(skeletonSourceText:string):dictionnary {
     let lines = skeletonSourceText.split('\n')
     let declare:string = ""
@@ -160,6 +212,14 @@ export function analyzeSkeleton(skeletonSourceText:string):dictionnary {
     return parsedDeclare
 }
 
+/**
+ * Génère le code à partir du squelette et du dictionnaire valorisé
+ * @param skeletonName nom du squelette
+ * @param source source du squelette
+ * @param vars dictionnaire valorisé
+ * @param dictionnary dictionnaire
+ * @returns array du code généré
+ */
 export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDictionnary,dictionnary:dictionnary):string[] {
 
     if(JSON.stringify(vars)!==JSON.stringify(dictionnary)) {
@@ -172,6 +232,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
     }
 
     let inSkodgee:boolean = false
+    let inService:boolean = false
     let inDeclare:boolean = false
     let ifStack:ifStack = []
     let forStack:forStack = []
@@ -209,6 +270,23 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         // debut d'un skodgee ?
         if(RGXskodgee.exec(line)!==null) {
             inSkodgee = true
+            sourceIndex++
+            continue exploration
+        }
+
+        // dans le service ?
+        if(inService===true) {
+            // fin di service ?
+            if(RGXend.exec(line)!==null) {
+                inService = false
+            }
+            sourceIndex++
+            continue exploration
+        }
+
+        // debut de service ?
+        if(RGXservice.exec(line)!==null) {
+            inService = true
             sourceIndex++
             continue exploration
         }
@@ -467,7 +545,8 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                     `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                 ))
             }
-            let value = eval(rl)
+            //let value = eval(rl)
+            let value = Function(`"use strict";return (${num})`)()
             localVariables.push({name:searchDefine[2],value:value,type:localVariablesType.number})
             sourceIndex++
             continue exploration
@@ -505,7 +584,8 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                             `\n==> localVariables :\n${JSON.stringify(vars,null,4)}`
                         ))
                     }
-                    lv.value = eval(num)    
+                    //lv.value = eval(num)    
+                    lv.value = Function(`"use strict";return (${num})`)()
                 } else {
                     let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName)
                     lv.value = rl    
@@ -583,7 +663,7 @@ function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, 
     return line
 }
 
-function varsToValues(vars:valorizedDictionnary):values {
+export function varsToValues(vars:valorizedDictionnary):values {
     let res:any[] = []
     vars.forEach((v:any) => {
         if(v.var!==undefined) {
@@ -634,7 +714,7 @@ function repeatSolve(variable:any,vars:valorizedDictionnary,forStack:forStack):a
     return varSolve(variable,vars,forStack,vars)
 }
 
-function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, globalVars:valorizedDictionnary, prefix:any=undefined):any {
+function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, globalVars:valorizedDictionnary, prefix:any=undefined,prefixCmp:dictionnary|undefined=undefined):any {
 
     if(globalVars===undefined) globalVars=vars
 
@@ -783,6 +863,34 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
         }
     }
 
+    {
+        // récupération de la valeur d'une variable à partie de la clé sélectionnée dans une combo
+        let search = /^([^_]+)__value$/.exec(variable)
+        if(search!==null) {
+            if(prefix===undefined) {
+                let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
+                if(varDeclaration!==undefined) {    
+                    if(varDeclaration.keyval!==undefined) {
+                        let keyval = varDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
+                        return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+                    }
+                }
+            } else {
+                let varDeclaration = (vars as Array<any>).find(v=>v.var===(search as RegExpExecArray)[1])
+                if(varDeclaration!==undefined) {    
+                    let cmpDeclaration = (prefixCmp as Array<any>).find(v=>v.var!==undefined ? v.var===(search as RegExpExecArray)[1] : false)
+                  if(cmpDeclaration!==undefined) {    
+                        if(cmpDeclaration.keyval!==undefined) {
+                            let keyval = cmpDeclaration.keyval.find((kv:any)=>kv.key===varDeclaration.value)
+                            return { type:"var", value:keyval!==undefined ? keyval.val : '' }
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+
     // recherche variable locale
     // uniquement si pas de préfixe parce qu'une variable locale ne peut-être préfixée
 
@@ -860,7 +968,7 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
             // cas particulier de la variable nombre d'occurrences d'un groupe
             // alors que l'on est pas dans une boucle for
             if(fsi===undefined && search[2]==='_n') return { type:"str", value:grpDeclaration.occurrences!==undefined ? grpDeclaration.occurrences.length : 0 }
-            return varSolve(search[2],grpDeclaration.occurrences[occurrenceIndex].values,forStack,globalVars,searchGrp)
+            return varSolve(search[2],grpDeclaration.occurrences[occurrenceIndex].values,forStack,globalVars,searchGrp,grpDeclaration.cmp)
         }
     } else {
         // variable simple, c'est peut-être un groupe
@@ -994,18 +1102,6 @@ function makeDensePathsAndValues(pathsAndValues:any[]):string {
     return densePathsAndValues(pathsAndValues).join('').slice(0,-1)
 }
 
-export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation) {
-    return Array.isArray(values) ?
-        values.length>0 ?
-            values[0] instanceof Object ?
-                (values[0] as pathAndValueObject).path!==undefined ?
-                    varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[])) :
-                varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary)))) :
-            values :
-        undefined :
-    undefined
-}
-
 function numberLines(text:string) {
     let ts = text.split('\n')
     let zs = '0'.repeat(ts.length.toFixed(0).length)
@@ -1041,7 +1137,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
                 // traiter un include
                 let fileName = (definition as groupObject).include
                 if(fileName!==undefined) {
-                    // vérifier que le nouvel include ne pose pas un lien qui provoque une référence circualire
+                    // vérifier que le nouvel include ne pose pas un lien qui provoque une référence circulaire
                     liens.push([skeletonName,fileName])
                     let scr = complement.searchCircularReference(liens)
                     if(scr.found===true) {
@@ -1051,7 +1147,7 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
                     let edwi = await extendDictionnaryWithIncludes(skeletonLocations,fileName,liens)
                     let dico:dictionnary = edwi.dictionnary
                     ;(definition as groupObject).cmp = [...dico]
-                    // remplacer les includes correspondants par le suqlette encadré par les directives # path et # endpath
+                    // remplacer les includes correspondants par le squelette encadré par les directives # path et # endpath
                     let lines:string[] = []
                     bodyLines.forEach((e:any) => {
                         let search = RGXinclude.exec(e)
@@ -1170,4 +1266,232 @@ export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
         }
     })
     return values
+}
+
+export function variableChanged(variable:string,value:any):any {
+    return []
+}
+
+export function getServices(source:string) {
+    let sourceLines = source.split(/\r\n|\n/)
+    let sourceIndex = 0
+    let inService = false
+    let serviceLines = []
+    while(true) {
+        let line = sourceLines[sourceIndex]
+        if(sourceIndex>=sourceLines.length) break
+        if(inService===true) {
+            if(RGXend.test(line)) break
+            serviceLines.push(line)
+        }
+        if(RGXservice.test(line)) inService=true
+        sourceIndex++
+    }
+    if(serviceLines.length===0) return undefined
+    try {
+        return JSON.parse(`[${serviceLines.join('')}]`)
+    } catch(error) {
+        throw(`${error.toString()}\n${serviceLines.join('\n')}`)
+    }
+}
+
+/**
+ * 
+ * @param dictionnary 
+ * @param fullDictionnary 
+ * @param services 
+ * @returns
+ */
+export async function resolveParametricOptions( dictionnary:valorizedDictionnary,
+                                                fullDictionnary:valorizedDictionnary|undefined=undefined,
+                                                services:services|undefined=undefined,
+                                                variable:string|string[]|undefined=undefined,
+                                                value:string|undefined=undefined) {
+    variable = variable!==undefined ? Array.isArray(variable) ? variable : [variable] : []
+    if(fullDictionnary===undefined) fullDictionnary=dictionnary
+    // parcourir le dictionnaire
+    let d = 0
+    while(true) {
+        if(d>=dictionnary.length) break
+        const definition = dictionnary[d]
+        if((definition as variableObject).var!==undefined) {
+            if((definition as variableObject).remoteOpt!==undefined) {
+                let rs = resolveSkeleton("",(definition as variableObject).remoteOpt,fullDictionnary,fullDictionnary)
+                if(rs!==undefined) {
+                    if(rs.length>0) {
+                        try {
+                            (definition as variableObject).opt = JSON.parse(await complement.service(rs[0]))
+                        } catch(error) {
+                            (definition as variableObject).opt = undefined
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).remoteKeyval!==undefined) {
+                let rs = resolveSkeleton("",(definition as variableObject).remoteKeyval,fullDictionnary,fullDictionnary)
+                if(rs!==undefined) {
+                    if(rs.length>0) {
+                        try {
+                            (definition as variableObject).keyval = JSON.parse(await complement.service(rs[0]))
+                        } catch(error) {
+                            (definition as variableObject).keyval = undefined
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).serviceOpt!==undefined) {
+                let skv = (definition as variableObject).serviceOpt as serviceOpt
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response:any = JSON.parse(await complement.service(sv.url))
+                            ;(definition as variableObject).opt = complement.extractDotPath(skv.opt,response)
+                        } catch(error) {
+                            (definition as variableObject).opt = []
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).serviceKeyval!==undefined) {
+                let skv = (definition as variableObject).serviceKeyval as serviceKeyval
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response = JSON.parse(await complement.service(sv.url))
+                            if(skv.array!==undefined) {
+                                response = response.hasOwnProperty(skv.array) !==undefined ? response[skv.array] : response
+                            }
+                            (definition as variableObject).keyval = response.map( (rs:any) => { 
+                                let key = complement.extractDotPath(skv.key,rs)
+                                let val = complement.extractDotPath(skv.val,rs)
+                                return { key: key , val: val } 
+                            })
+                        } catch(error) {
+                            (definition as variableObject).keyval = undefined
+                        }
+                    }
+                }
+            }
+            else if((definition as variableObject).serviceValuate!==undefined) {
+                let skv = (definition as variableObject).serviceValuate as serviceValuate
+                if(variable.length>0 ? skv.params?.some(e=>{
+                    if(Array.isArray(variable)) {
+                        return variable.some(v=>e===`{{${v}}}`)
+                    }
+                    else {
+                        return e===`{{${variable}}}`
+                    }
+                }) : true) {
+                    let sv = services?.find(sv=>sv.service===skv.service) as service
+                    if(sv!==undefined) {
+                        if(skv.params!==undefined) {
+                            skv.params.forEach((param,i)=>{
+                                let resolvedParam = resolveSkeleton("",param,fullDictionnary as valorizedDictionnary,fullDictionnary as valorizedDictionnary)
+                                sv.url = sv?.url.replace(`{{${sv.params[i].var}}}`,resolvedParam[0])
+                            })
+                        }
+                        try {
+                            let response = JSON.parse(await complement.service(sv.url)) as any
+                            (definition as valorizedVariableObject).value = complement.extractDotPath(skv.value,response)
+                            if((definition as variableObject).onchange==="propagate") {
+                                variable.push((definition as variableObject).var)
+                            }
+                        } catch(error) {
+                            // ne rien faire
+                        }
+                    }
+                }
+            }
+        } 
+        else if((definition as groupObject).grp!==undefined) {
+            (definition as groupObject).cmp = await resolveParametricOptions((definition as groupObject).cmp,fullDictionnary,services,variable,value)
+        }
+        d++
+    }
+    return dictionnary
+}
+
+export function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorizedDictionnary):valorizedDictionnary {
+    let d=0
+    while(true) {
+        if(d>=dictionnary.length) break
+        if((dictionnary[d] as valorizedVariableObject).var!==undefined) {
+            if((dic2[d] as valorizedVariableObject).var!==undefined) {
+                if((dictionnary[d] as valorizedVariableObject).var===(dic2[d] as valorizedVariableObject).var) {
+                    if((dic2[d] as valorizedVariableObject).value!==undefined) {
+                        (dictionnary[d] as valorizedVariableObject).value = (dic2[d] as valorizedVariableObject).value
+                    }
+                }
+            }
+        }
+        d++
+    }
+    return dictionnary
+}
+
+export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation) {
+    return Array.isArray(values) ?
+        values.length>0 ?
+            values[0] instanceof Object ?
+                (values[0] as pathAndValueObject).path!==undefined ?
+                    varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[])) :
+                varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary)))) :
+            values :
+        undefined :
+    undefined
+}
+
+export function extendDictionnaryWithPolymorphicValuesRepresentation(dictionnary:dictionnary,values:polymorphicValuesRepresentation):dictionnary {
+    if(Array.isArray(values)) {
+        if((values as values).every(e=>Array.isArray(e)||(typeof e==='string'))) {
+            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,pathFromCompact(values,dictionnary)))
+        }
+        if((values as valorizedDictionnary).every((e:variableObject|groupObject)=>(e as variableObject).var!==undefined||(e as groupObject).grp!==undefined)) {
+            return extendDictionnary(dictionnary,values as valorizedDictionnary)
+        }
+        if((values as pathAndValueObject[]).every((e:pathAndValueObject)=>(e.path!==undefined&&e.value!==undefined))) {
+            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,values as pathAndValueObject[]))
+        }
+    }
+    return dictionnary
+}
+
+function pathFromCompact(values:Array<any>,dictionnary:dictionnary,path:string=""):pathAndValueObject[] {
+    let result:pathAndValueObject[] = []
+    dictionnary.forEach((d:variableObject|groupObject,i:number)=>{
+        if((d as groupObject).grp!==undefined) {
+            result = [...result,...pathFromCompact(values[i],(d as groupObject).cmp,`${path}${(d as groupObject).grp}[${i}]>`)]
+        } else {
+            result.push({ path:`${path}${(d as variableObject).var}`, value:`${values[i]}` })
+        }
+    })
+    return result
 }

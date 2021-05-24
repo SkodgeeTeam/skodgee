@@ -3,7 +3,7 @@
   "displayName": "SKODGEE",
   "description": "SKodgee Obviously Designed for Generation Enhanced Efficiently",
   "publisher": "skodgeeTeam",
-  "version": "0.0.13",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.46.0"
   },
@@ -11,8 +11,8 @@
     "Other"
   ],
   "repository": {
-    "type":"git",
-    "url":"https://github.com/SkodgeeTeam/skodgee"
+    "type": "git",
+    "url": "https://github.com/SkodgeeTeam/skodgee"
   },
   "icon": "resources/skodgee256.png",
   "activationEvents": [
@@ -65,9 +65,9 @@
     "@types/mocha": "^8.0.0",
     "@types/node": "^12.11.7",
     "@types/vscode": "^1.46.0",
-    "@typescript-eslint/eslint-plugin": "^4.1.1",
-    "@typescript-eslint/parser": "^4.1.1",
-    "eslint": "^7.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "eslint": "^7.25.0",
     "glob": "^7.1.6",
     "mocha": "^8.1.3",
     "typescript": "^4.0.2",

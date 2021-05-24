@@ -54,7 +54,9 @@ document.querySelector('#generateCode').addEventListener('click',e=>{
     document.querySelectorAll('#formulaire input,#formulaire select').forEach( inp => {
         res.push({ var:inp.name, value:inp.value })
     })
+    // réinitialise complètement le dictionnaire
     resetVars()
+    // réalimente le dictionnaire avec les variables du formulaire (variables cachées incluses)
     let data = cleanVars(encodeVars(res))
     document.querySelector('#expansed').value = JSON.stringify(data,null,4)
     vscode.postMessage({
@@ -151,6 +153,12 @@ window.addEventListener('message', e => {
             document.querySelector('#expansed').value = message.error
             document.querySelector('#getCode').classList.add('hidden')
             break
+        case 'afterVariableChanged':
+            dictionnary = message.dictionnary
+            dictionnaryValues = message.values
+            generateForm(dictionnary)
+            document.querySelector('#expansed').value = JSON.stringify(dictionnary,null,4)
+            break
     }
 })
 
@@ -202,6 +210,17 @@ generateForm = data => {
 }
 
 generateInput = (e,parentName=undefined,value=undefined) => {
+    if(e.hidden!==undefined) {
+        // les variables cachées ne sont pas visibles dans le formulaire
+        // mais elles sont quand même être créées pour
+        // que leur valeur soit récupérable pour la génération
+        let input = document.createElement('input')
+        input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+        input.id = lastId()
+        input.type="hidden"
+        input.value=value
+        return [input]
+    }
     let res = []
     if(e.var!==undefined) {
         let spanStatus = document.createElement('span')
@@ -216,7 +235,46 @@ generateInput = (e,parentName=undefined,value=undefined) => {
         res.push(label)
 
         let input
-        if(e.opt===undefined) {
+        
+        if(e.opt!==undefined) {
+            input = document.createElement('select')
+            input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+            input.id = lastId()
+            e.opt.forEach( (dl,i) => {
+                let option = document.createElement('option')
+                option.value = dl
+                option.textContent = dl
+                input.appendChild(option)
+            })
+            input.selectedIndex=0
+            if(e.onchange!==undefined) {
+                if(e.onchange==='propagate') {
+                    input.addEventListener('change',event=>{
+                        variableChanged(e.var,input.value)
+                    })
+                }
+            }
+        } 
+        else if(e.keyval!==undefined) {
+            input = document.createElement('select')
+            input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
+            input.id = lastId()
+            e.keyval.forEach( (kv,i) => {
+                let option = document.createElement('option')
+                option.value = kv.key
+                option.textContent = kv.val
+                input.appendChild(option)
+            })
+            input.selectedIndex=0
+            if(e.onchange!==undefined) {
+                if(e.onchange==='propagate') {
+                    input.addEventListener('change',event=>{
+                        variableChanged(e.var,input.value)
+                    })
+                }
+            }
+        }
+        else  {
             input = document.createElement('input')
             input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
             input.id = lastId()
@@ -242,18 +300,7 @@ generateInput = (e,parentName=undefined,value=undefined) => {
             if(testMode) input.value = e.var
             /***** T E S T - M O D E *****/
             /*****************************/
-        } else {
-            input = document.createElement('select')
-            input.name = parentName!==undefined ? `${parentName}>${e.var}` : e.var
-            input.id = lastId()
-            e.opt.forEach( (dl,i) => {
-                let option = document.createElement('option')
-                option.value = dl
-                option.textContent = dl
-                input.appendChild(option)
-            })
-            input.selectedIndex=0
-        }
+        } 
         if(value!==undefined) input.value = value
         else if(e.ini!==undefined) input.value = e.ini
         res.push(input)
@@ -575,6 +622,24 @@ resetVars = (encodeVarsSet=dictionnary) => {
         ev.occurrences = undefined
     })
     return encodeVarsSet
+}
+
+variableChanged = (variable,value) => {
+    let res =[]
+    document.querySelectorAll('#formulaire input,#formulaire select').forEach( inp => {
+        res.push({ var:inp.name, value:inp.value })
+    })
+    resetVars()
+    let data = cleanVars(encodeVars(res))
+    document.querySelector('#expansed').value = JSON.stringify(data,null,4)
+    vscode.postMessage({
+        command:"variableChangePropagation",
+        variable:variable,
+        value:value,
+        name:loadedSkeletonName,
+        source:loadedSkeletonSource,
+        dictionnary:dictionnary
+    })
 }
 
 swapUserMode = (askUserMode) => {

@@ -77,11 +77,15 @@ ___
 
 ## Création d'un squelette
 
-Chaque squelette est composé de 3 parties
+Chaque squelette est composé de 3 parties obligatoires
 
 - Un `entête` pour l'identification du squelette
 - Un `dictionnaire` pour identifier les paramètres
 - Un `corps` paramétré pour spécifier le texte et les règles de génération
+
+Une partie optionnelle
+
+- Un catalogue de `service` pour la déclaration de webapi
 
 ### Entête du squelette
 
@@ -108,6 +112,50 @@ avec
 
 > Dans le reste du document, tous les exemples utilisent # comme  `prefix`.
 
+### Catalogue des services
+
+Le catalogue des services optionnel.  
+Quand il est présent, il est précédé d'un directive `service` et suivi d'une directive `end`.  
+Entre ces 2 lignes on retrouve une suite d'objets au format JSON séparés par une virgule,
+chaque objet servant à déclarer un service de type webapi REST.
+
+<!---->
+    # service
+      { 
+          "service": "codeService",
+          "url": "url",
+          "params": [ { "var":"codeVariable" }, ...]
+      }
+    # end
+
+- `"service"` : code du service pour utilisation dans le dictionnaire
+- `"url"` : url de webapi avec paramètres variabilisés par la notation double-moustaches
+- `"params"` : tableau des variables utilisées dans l'url
+
+#### Exemples de service
+
+Récupération de la liste des régions avec l'api geo
+
+- aucun paramètre à passer lors de l'appel de l'api
+
+<!---->
+    {
+        "service": "regions",
+        "url": "https://geo.api.gouv.fr/regions?fields=nom,code", 
+        "params": []
+    },
+
+Récupération d'une liste de communes rattachées à un code postal avec l'api geo
+
+- le code postal est passé en paramètre d'appel de l'api
+
+<!---->
+    {
+        "service": "communesCP",
+        "url": "https://geo.api.gouv.fr/communes?codePostal={{codePostal}}&fields=nom", 
+        "params": [{"var":"codePostal"}]
+    }
+
 ### Dictionnaire du squelette
 
 Le dictionnaire des paramètres est précédé d'un directive `declare` et suivi d'une directive `end`.  
@@ -120,19 +168,50 @@ Il existe 2 types d'objets :
 
 <!---->
     # declare
-      { "var": "variable1", 
-        "lib": "libellé de la variable",
-        "opt": ["valeur1","valeur2","valeur3"] },
-      { "grp": "groupe1",
-        "lib": "libellé du groupe",
-        "rpt": "min,max",
+      { "var": "codeVariable", 
+        "lib": "texte libre",
+        "ini": "valeur",
+        "opt": ["valeur",...],
+        "keyval": [{"key":"cle1","val":"valeur1"},...],
+        "description": "texte libre",
+        "placeholder": "texte libre",
+        "min": "nombre",
+        "max": "nombre",
+        "step": "nombre",
+        "type": "numeric",
+        "pattern": "regex",
+        "hidden": "",
+        "remoteOpt": "url",
+        "remoteKeyval": "url",
+        "serviceOpt": {
+            "service": "codeService",
+            "opt": "pathJson",
+            "params": ["codeVariable",...]
+        },
+        "serviceKeyval": {
+            "service": "codeService",
+            "array": "pathJson",
+            "key": "pathJson",
+            "val": "pathJson",
+            "params": ["codeVariable",...]
+        },
+        "serviceValuate": {
+            "service": "codeService",
+            "value": "pathJson"
+            "params": ["codeVariable",...]
+        },
+        "onchange": "propagate"
+      },
+      { "grp": "codeGroupe",
+        "lib": "texte libre",
+        "rpt": "entier,entier",
         "cmp": [
-            { "var": "variable2", "lib": "libellé de la variable" },
-            { "var": "variable3", "lib": "libellé de la variable" },
-            { "grp": "groupe1",
-                "lib": "libellé du groupe",
-                "rpt": "min,max",
-                "include" : "nom du fichier squelette à inclure"
+            { "var": "codeVariable", "lib": "texte libre", ... },
+            { "var": "codeVariable", "lib": "texte libre", ... },
+            { "grp": "codeGroupe",
+                "lib": "texte libre",
+                "rpt": "entier,entier",
+                "include" : "nom de fichier squelette"
             }
         ]
       }
@@ -141,8 +220,10 @@ Il existe 2 types d'objets :
 avec pour un objet variable
 
 - `"var"` : code de la variable
-- `"lib"` : libellé de la variable  
-- `"opt"` : liste de valeurs possibles pour la variable  
+- `"lib"` : libellé de la variable
+- `"ini"` : valeur initiale de la variable
+- `"opt"` : liste de valeurs possibles pour la variable
+- `"keyval"` : liste de pairs de clé valeur pour la variable ; la valeur est affichée et la clé est récupérée
 - `"description"` : texte informatif qui sera restitué comme bulle d'aide dans le formulaire
 - `"placeholder"` : valeur informative apparaissant dans le formulaire quand la variable n'est pas renseignée
 - `"min"` : valeur minimum autorisée⁽¹⁾⁽²⁾
@@ -150,9 +231,16 @@ avec pour un objet variable
 - `"step"` : pas d'incrément⁽¹⁾⁽²⁾
 - `"type"` : typage de la variable pour contrôle dans le formulaire, renseigner à `numeric` pour contrôler un nombre⁽¹⁾
 - `"pattern"` : expression régulière pour le contrôle de la validité dans le formulaire (standard pattern html)⁽¹⁾
+- `"hidden"` : la variable n'apparaît pas dans le formulaire de saisie quand `hidden` est présent
+- `"remoteOpt"` : url d'une webapi ramement une liste de valeurs possibles pour la variable
+- `"remoteKeyval"` : url d'une webapi ramement une liste de pairs clé valeur pour la variable
+- `"serviceOpt"` : service utilisé pour ramener une liste de valeurs possibles pour la variable
+- `"serviceKeyval"` : service utilisé pour ramener une liste de pairs clé valeur pour la variable
+- `"serviceValuate"` : service utilisé pour ramener la valeur d'une variable
+- `"onchange"` : action déclenchée au changement de valeur de la variable, une seule valeur `propagate`; propage la valeur de la variable aux autres variables qui l'utilise pour déterminer leur valeur
 
-_⁽¹⁾ `min`, `max` et `step` sont prioritaires sur `type` qui est prioritaire sur `pattern`_
-_⁽²⁾ si `min`, `max` ou `step` sont utilisés, le champ de saisie dans le formulaire est de la forme html &lt;input type="number"&gt;_
+_⁽¹⁾ `min`, `max` et `step` sont prioritaires sur `type` qui est prioritaire sur `pattern`_  
+_⁽²⁾ si `min`, `max` ou `step` sont utilisés, le champ de saisie dans le formulaire est de la forme html &lt;input type="number"&gt;_  
 
 avec pour un objet groupe
 
@@ -166,11 +254,82 @@ Dans un même groupe on ne peut pas avoir à la fois les champs `"cmp"` et `"inc
 mais dans un champ `"cmp"` on peut avoir des objets variables, des objets groupes avec champ `"cmp"` et des objets groupes avec champ `"include"`.
 Les champs `"rpt"` et `"include"` ne peuvent pas non plus être présents au même niveau dans un groupe.
 
+#### 🡆 Appels de service - notion de path json
+
+Dans la documentation des services on utilise le terme `pathJson` ; cela correspond à un chemin
+utilisant la notation avec point pour désigner une propriété, un objet ou un tableau contenu dans un
+objet JSON. Dans les appels de service, la notation a été étendue pour couvrir des cas particuliers
+que l'on peut rencontrer, comme par exemple la récupération de toutes les occurrences d'une seule
+propriété d'un tableau d'objet.
+
+| Notation                        | Standard | Récupère                   |
+|:--------------------------------|:--------:|:---------------------------|
+| `object.property`               | oui      | propriété d'un objet       |
+| `object.object.property`        | oui      | propriété d'un sous-objet  |
+| `object.array[].property`       | non      | tableau pour une propriété |
+| `object.array`                  | oui      | tableau                    |
+| `object.array[number].property` | oui      | propriété d'une occurrence |
+| `object.property[number]`       | oui      | propriété d'une occurrence |
+| `[].property`                   | non      | tableau pour une propriété |
+| `[index].property`              | non      | propriété d'une occurrence |
+
+Ces notations sont mixables.
+
+#### 🡆 Appels de service - serviceOpt
+
+Service utilisé pour ramener une liste de valeurs possibles pour la variable.
+Dans le formulaire, la variable est une listbox simple. La valeur choisie par l'utilisateur est celle qui valorisera la variable.
+
+    "serviceOpt": {
+        "service": "codeService",
+        "opt": "pathJson",
+        "params": ["codeVariable",...]
+    }
+
+L'appel du service se fait en passant les variables précisées par le paramètre `params`.  
+La listbox sera alimentée à partir des valeurs extraites selon le path json `opt` ;
+ce path json doit pointer vers un tableau contenant les valeurs ramenées par le service.
+
+#### 🡆 Appels de service - serviceKeyval
+
+Service utilisé pour ramener une liste de pairs de clé valeur possibles pour la variable.
+Dans le formulaire, la variable est une listbox. L'utilisateur choisi un libellé (valeur) et la variable sera valorisé par la clé qui correspond.
+
+    "serviceKeyval": {
+        "service": "codeService",
+        "array": "pathJson",
+        "key": "pathJson",
+        "val": "pathJson",
+        "params": ["codeVariable",...]
+    }
+
+L'appel du service se fait en passant les variables précisées par le paramètre `params`.  
+La listbox sera alimentée à partir des valeurs extraites selon le path json `array` ;
+ce path json doit pointer vers un tableau contenant les valeurs ramenées par le service.
+Si le service ramène directement un tableau non nommé, alors le path json `array` doit être omis.
+Les clés sont désignées par le path json `key` qui s'applique sur le tableau.
+Les valeurs sont désignées par le path json `val` qui s'applique sur le tableau.
+
+#### 🡆 Appels de service - serviceValuate
+
+Service utilisé pour ramener une valeur pour la variable.
+Dans le formulaire, la variable est simple champ ou il peut être caché (par `hidden`) si l'on souhaite manipuler une variable de travail
+dont l'utilisateur n'a pas besoin d'avoir connaissance.
+
+    "serviceValuate": {
+        "service": "codeService",
+        "value": "pathJson"
+        "params": ["codeVariable",...]
+    },
+
+L'appel du service se fait en passant les variables précisées par le paramètre `params`.  
+La variable sera alimentée à partir de la valeur extraite selon le path json `value` ; ce path ne doit ramener qu'une seule valeur.
+
 ### Corps du squelette
 
 Le corps du squelette contient du texte qui sera restitué tel quel à la génération après résolution des appels de paramètres et application des directives décrites ci-après.
 
-### 🡆 Appels de paramètres
+#### 🡆 Appels de paramètres
 
 Les appels de paramètres utilisent la notation "double-moustaches" : `{{paramètre}}`.  
 Un paramètre est soit une variable, soit un groupe, soit un chemin vers une variable ou un groupe.  

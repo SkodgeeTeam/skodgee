@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.1.0] - 2021-05-24
+
+- Ajout de capacités de déclaration et d'utilisation de webapi dans les squelettes.
+
 ## [0.0.13] - 2021-05-19
 
 - L'injection de tous les formats de dictionnaires fonctionne alors que précédemment seul le format dense était correcte.  

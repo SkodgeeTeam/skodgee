@@ -1,0 +1,5 @@
+SKoDGee sample
+Table = deux
+Rubrique = rubrique
+000079002{"sn":"getRemoteData.skl","dt":"2021-05-13T20:59:56.231Z","data":"'tab
+le':'deux','rubrique':'rubrique'"}                                             

@@ -95,7 +95,6 @@ export async function activate(context: vscode.ExtensionContext) {
 							source: sourceAfterResolvedModels,
 							sourceBrut: resolvedValue.sourceBrut,
 							dictionnary: resolvedValue.dictionnary,
-							//values: skeleton.extractValues(resolvedValue.dictionnary,[])				
 							values: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)			
 						})
 					},(reason)=>{
@@ -127,19 +126,6 @@ export async function activate(context: vscode.ExtensionContext) {
 		panel.webview.onDidReceiveMessage(
 			message=>{
 				switch(message.command) {
-					/*case 'mock':
-						complement.service('http://localhost:1337').then(resolve=>{
-							panel.webview.postMessage({
-								command:'mock',
-								data:resolve
-							})	
-						},reason=>{
-							panel.webview.postMessage({
-								command:'mock',
-								data:reason
-							})	
-						})
-						break*/
 					case 'loadSkeleton':
 						{
 							try {
@@ -153,16 +139,40 @@ export async function activate(context: vscode.ExtensionContext) {
 									let values = message.values!==undefined 
 										? skeleton.extractValues(resolvedValue.dictionnary,message.values)
 										: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)	
-									skeleton.resolveModels(source)
-									.then((sourceAfterResolvedModels)=>{
+									let services = undefined
+									try {
+										services = skeleton.getServices(source)
+									} catch(error) {
 										panel.webview.postMessage({
-											command:'loadSkeletonOnSuccess',
-											name: value.name,
-											location: value.location,
-											source: sourceAfterResolvedModels,
-											sourceBrut: resolvedValue.sourceBrut,
-											dictionnary: resolvedValue.dictionnary,
-											values: values
+											command: 'loadSkeletonOnError',
+											error : `le squelette contient des erreurs dans la déclaration des services :\n`+
+											`${error.toString()}`
+										})
+										return
+									}
+									let dico = message.values!==undefined
+										? skeleton.extendDictionnaryWithPolymorphicValuesRepresentation(resolvedValue.dictionnary,message.values)
+										: resolvedValue.dictionnary
+									skeleton.resolveParametricOptions(dico,undefined,services)
+									.then((resolvedDictionnary)=>{
+										skeleton.resolveModels(source)
+										.then((sourceAfterResolvedModels)=>{
+											panel.webview.postMessage({
+												command:'loadSkeletonOnSuccess',
+												name: value.name,
+												location: value.location,
+												source: sourceAfterResolvedModels,
+												sourceBrut: resolvedValue.sourceBrut,
+												dictionnary: resolvedDictionnary,
+												values: values
+											})
+										},(reason)=>{
+											panel.webview.postMessage({
+												command: 'loadSkeletonOnError',
+												error: reason,
+												log: dumpLog()
+											})
+											return
 										})
 									},(reason)=>{
 										panel.webview.postMessage({
@@ -236,6 +246,23 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 						}
 						break
+					case 'variableChangePropagation':
+						{
+							try {
+								skeleton.resolveParametricOptions(message.dictionnary,undefined,skeleton.getServices(message.source),message.variable,message.value)
+								.then(resolve=>{
+									panel.webview.postMessage({
+										command: 'afterVariableChanged',
+										name: message.name,
+										source: message.source,
+										dictionnary: message.dictionnary,
+										values: skeleton.varsToValues(message.dictionnary)	
+									})
+								})
+							} catch(error) {
+								vscode.window.showErrorMessage(error)
+							}
+						}
 				}
 			},
 			undefined,

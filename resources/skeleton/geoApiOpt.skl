@@ -1,0 +1,32 @@
+# skodgee
+    { 
+        "name": "Geo Api Opt",
+        "description": "Consultation de l'API Geo 'Découpage administratif",
+        "author": "herve.heritier",
+        "version": "0.0.0",
+        "prefix": "#" 
+    }
+# end
+# declare
+    { "var": "region", "lib": "Région", "remoteOpt":"http://127.0.0.1:1337/opt/regions", "onchange":"propagate" },
+    { "var": "departement", "lib": "Département", "remoteOpt":"http://127.0.0.1:1337/opt/regions?nom={{region}}&limit=1", "onchange":"propagate" },
+    { "grp": "selection", "lib": "Communes choisies", "cmp":[
+        { "var": "commune", "lib": "Commune", "remoteOpt":"http://127.0.0.1:1337/opt/departements?nom={{departement}}&limit=1" }
+    ], "rpt": "3,3" }
+# end
+
+Geo Api
+
+Région = {{region}}
+
+Département = {{departement}}
+
+# defnum choix 0
+# for {{selection}}
+# calc choix {{__choix}} + 1
+Commune #{{__choix}} :  {{selection_commune}}
+# endfor
+
+# dictionnary dense
+_______________________________________________________________________________
+
