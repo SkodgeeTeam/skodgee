@@ -26,7 +26,7 @@ file_extensions []     = mysample;
 styles [] {
 
    .keyword : style 
-      color                 = "green"
+      color                 = "#00FF00"
       textmate_scope        = "keyword"
    ;
    .variable : style 
@@ -38,7 +38,7 @@ styles [] {
       textmate_scope        = "comparaison"
    ;
    .element : style 
-      color                 = "orange"
+      color                 = "#FAA"
       textmate_scope        = "element"
    ;
    .nostyle : style 
@@ -46,27 +46,43 @@ styles [] {
       textmate_scope        = "nostyle"
    ;
    .sharp : style 
-      color                 = "red"
+      color                 = "#FFFF00"
       textmate_scope        = "sharp"
    ;
    .open_mustach : style 
-      color                 = "cyan"
+      color                 = "gold"
       textmate_scope        = "open_mustach"
    ;
    .close_mustach : style 
-      color                 = "cyan"
+      color                 = "gold"
       textmate_scope        = "close_mustach"
    ;
-   .data : style 
-      color = "orange"
-      textmate_scope = "data"
+   .double_mustaches : style
+      color                 = "#AF0"
+      textmate_scope        = "double_mustaches"
    ;
 }
 
 contexts [] {
 
-   main : context {
 
+   mustaches : context {
+      : inline_push {
+         regex          \=  (?:^(\s*)({)(\s*))
+         styles []       = .nostyle, .open_mustach, .nostyle;
+         : pop {
+            regex \= (?:^(\s*)(})(\s*)$)
+            styles [] = .nostyle, .close_mustach, .nostyle;
+         }
+         : include "mustaches";
+      }      
+   }
+   
+   main : context {
+      : pattern {
+         regex          \=  ({{)([^}]*)(}})
+         styles []       = .double_mustaches, .element, .double_mustaches;
+      }
       : inline_push {
          regex          \=  (?:^(#)(\s*)(skodgee)(\s*))
          styles []       = .sharp, .nostyle, .keyword, .nostyle;
@@ -74,7 +90,16 @@ contexts [] {
             regex \= (?:^(#)(\s*)(end)(\s*)$)
             styles [] = .sharp, .nostyle, .keyword, .nostyle;
          }
-         : include "skodgee";
+         : include "mustaches";
+      }      
+      : inline_push {
+         regex          \=  (?:^(#)(\s*)(service)(\s*))
+         styles []       = .sharp, .nostyle, .keyword, .nostyle;
+         : pop {
+            regex \= (?:^(#)(\s*)(end)(\s*)$)
+            styles [] = .sharp, .nostyle, .keyword, .nostyle;
+         }
+         : include "main";
       }      
       : inline_push {
          regex          \=  (?:^(#)(\s*)(declare)(\s*))
@@ -89,50 +114,28 @@ contexts [] {
          regex          \=  (?:^(#)(\s*)(for)(\s+)({{)(\w+)(}})(\s*))
          styles []       = .sharp, .nostyle, .keyword, .nostyle, .open_mustach,  .variable, .close_mustach, .nostyle;
          : pop {
-            regex \= (?:^(#)(\s*)(endfor)(\s*)$)
-            styles [] = .sharp, .nostyle, .keyword, .nostyle;
+            regex \= (?:^(#)(\s*)(endfor))
+            styles [] = .sharp, .nostyle, .keyword;
          }
          : include "main";
       }
       : inline_push {
-         regex          \=  (?:^(#\s*)(if)(\s+)({{)(\w+)(}})(\s+)(eq|EQ|==|=|le|LE|<=|ge|GE|>=|ne|NE|#|!=|<>|gt|GT|>|lt|LT|<)(\s+)(.*)(\s*)$)
-         styles []       = .sharp, .keyword, .nostyle, .open_mustach, .variable, .close_mustach, .nostyle, .comparaison, .nostyle, .element, .nostyle;
+         regex          \=  (?:^(#)(\s*)(repeat)(\s+)({{)(\w+)(}})(\s*))
+         styles []       = .sharp, .nostyle, .keyword, .nostyle, .open_mustach,  .variable, .close_mustach, .nostyle;
          : pop {
-            regex       \= (?:^(#)(\s*)(endif)(\s*)$)
-            styles []    = .sharp, .nostyle, .keyword, .nostyle;
+            regex \= (?:^(#)(\s*)(endrepeat))
+            styles [] = .sharp, .nostyle, .keyword;
          }
          : include "main";
       }
-      : pattern {
-         regex          \= (?:({{)(\w+)(}}))
-         styles []       = .open_mustach, .variable, .close_mustach;
-      }
-
-   }
-   
-   inskodgee : context {
-         : inline_push {
-            regex       \= ("name")
-            styles []    = .keyword;
-            default_style = .nostyle
-            : pop {
-               regex       \= ("\w+")
-               styles []    = .data;
-            }
-         }
-   }
-   
-   skodgee : context {
       : inline_push {
-         regex          \= ({)
-         styles []       = .open_mustach;
+         regex          \=  (?:^(#)(\s*)(if)(\s+)({{)(\w+)(}})(\s+)(eq|EQ|==|=|le|LE|<=|ge|GE|>=|ne|NE|#|!=|<>|gt|GT|>|lt|LT|<)(\s+)(.*)(\s*)$)
+         styles []       = .sharp, .nostyle, .keyword, .nostyle, .open_mustach, .variable, .close_mustach, .nostyle, .comparaison, .nostyle, .element, .nostyle;
          : pop {
-            regex       \= (})
-            styles []    = .close_mustach;
+            regex \= (?:^(#)(\s*)(endif))
+            styles [] = .sharp, .nostyle, .keyword;
          }
-         : include "inskodgee";
+         : include "main";
       }
    }
-   
-
 }
