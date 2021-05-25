@@ -30,10 +30,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			{
 				enableScripts: true,
 				localResourceRoots: localResourceRoots,
-				/*localResourceRoots: [
-					vscode.Uri.file(path.join(context.extensionPath,'resources')),
-					vscode.Uri.file(configuration.skeletonLocation)
-				],*/
 				retainContextWhenHidden: true
 			}
 		)
@@ -88,14 +84,34 @@ export async function activate(context: vscode.ExtensionContext) {
 			try {
 				skeleton.extendDictionnaryWithIncludes(configuration.skeletonLocations,'???',undefined,developSkeletonText)
 				.then((resolvedValue)=>{
-					skeleton.resolveModels(resolvedValue.sourceLines.join('\n'))
-					.then((sourceAfterResolvedModels)=>{
+					let source = resolvedValue.sourceLines.join('\n')
+					let values = skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)
+					let services = undefined
+					try {
+						services = skeleton.getServices(source)
+					} catch(error) {
 						panel.webview.postMessage({
-							command:'developSkeletonOnSuccess',
-							source: sourceAfterResolvedModels,
-							sourceBrut: resolvedValue.sourceBrut,
-							dictionnary: resolvedValue.dictionnary,
-							values: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)			
+							command: 'developSkeletonOnSuccess',
+							error : `le squelette contient des erreurs dans la déclaration des services :\n`+
+							`${error.toString()}`
+						})
+						return
+					}
+					skeleton.resolveParametricOptions(resolvedValue.dictionnary,undefined,services)
+					.then((resolvedDictionnary)=>{
+						skeleton.resolveModels(source)
+						.then((sourceAfterResolvedModels)=>{
+							panel.webview.postMessage({
+								command:'developSkeletonOnSuccess',
+								name: '???',
+								location: '???',
+								source: sourceAfterResolvedModels,
+								sourceBrut: resolvedValue.sourceBrut,
+								dictionnary: resolvedDictionnary,
+								values: values
+							})
+						},(reason)=>{
+							throw reason
 						})
 					},(reason)=>{
 						throw reason
@@ -110,7 +126,6 @@ export async function activate(context: vscode.ExtensionContext) {
 				})
 				return
 			}
-			
 		}
 
 		panel.webview.html = page.toString()
