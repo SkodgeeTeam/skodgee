@@ -81,51 +81,30 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		} else {
 
-			try {
-				skeleton.extendDictionnaryWithIncludes(configuration.skeletonLocations,'???',undefined,developSkeletonText)
-				.then((resolvedValue)=>{
-					let source = resolvedValue.sourceLines.join('\n')
-					let values = skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)
-					let services = undefined
-					try {
-						services = skeleton.getServices(source)
-					} catch(error) {
-						panel.webview.postMessage({
-							command: 'developSkeletonOnSuccess',
-							error : `le squelette contient des erreurs dans la déclaration des services :\n`+
-							`${error.toString()}`
-						})
-						return
-					}
-					skeleton.resolveParametricOptions(resolvedValue.dictionnary,undefined,services)
-					.then((resolvedDictionnary)=>{
-						skeleton.resolveModels(source)
-						.then((sourceAfterResolvedModels)=>{
-							panel.webview.postMessage({
-								command:'developSkeletonOnSuccess',
-								name: '???',
-								location: '???',
-								source: sourceAfterResolvedModels,
-								sourceBrut: resolvedValue.sourceBrut,
-								dictionnary: resolvedDictionnary,
-								values: values
-							})
-						},(reason)=>{
-							throw reason
-						})
-					},(reason)=>{
-						throw reason
-					})
-				},(reason)=>{
-					throw reason
+			skeleton.extendDictionnaryWithIncludes(configuration.skeletonLocations,'???',undefined,developSkeletonText)
+			.then(async (resolvedValue)=>{
+				let source = resolvedValue.sourceLines.join('\n')
+				let values = skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)
+				let services = skeleton.getServices(source)
+				let resolvedDictionnary= await skeleton.resolveParametricOptions(resolvedValue.dictionnary,undefined,services)
+				let sourceAfterResolvedModels = await skeleton.resolveModels(source)
+				panel.webview.postMessage({
+					command:'developSkeletonOnSuccess',
+					name: '???',
+					location: '???',
+					source: sourceAfterResolvedModels,
+					sourceBrut: resolvedValue.sourceBrut,
+					dictionnary: resolvedDictionnary,
+					values: values
 				})
-			} catch(error) {
+			})
+			.catch((error) => {
 				panel.webview.postMessage({
 					command: 'developSkeletonOnError',
 					error: error
 				})
-				return
-			}
+			})
+
 		}
 
 		panel.webview.html = page.toString()
@@ -141,143 +120,104 @@ export async function activate(context: vscode.ExtensionContext) {
 		panel.webview.onDidReceiveMessage(
 			message=>{
 				switch(message.command) {
-					case 'loadSkeleton':
-						{
-							try {
-								let value = { 
-									name:message.skeleton, 
-									location:configuration.skeletonLocations 
-								}
-								skeleton.extendDictionnaryWithIncludes(value.location,value.name)
-								.then((resolvedValue)=>{
-									let source = resolvedValue.sourceLines.join('\n')
-									let values = message.values!==undefined 
-										? skeleton.extractValues(resolvedValue.dictionnary,message.values)
-										: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)	
-									let services = undefined
-									try {
-										services = skeleton.getServices(source)
-									} catch(error) {
-										panel.webview.postMessage({
-											command: 'loadSkeletonOnError',
-											error : `le squelette contient des erreurs dans la déclaration des services :\n`+
-											`${error.toString()}`
-										})
-										return
-									}
-									let dico = message.values!==undefined
-										? skeleton.extendDictionnaryWithPolymorphicValuesRepresentation(resolvedValue.dictionnary,message.values)
-										: resolvedValue.dictionnary
-									skeleton.resolveParametricOptions(dico,undefined,services)
-									.then((resolvedDictionnary)=>{
-										skeleton.resolveModels(source)
-										.then((sourceAfterResolvedModels)=>{
-											panel.webview.postMessage({
-												command:'loadSkeletonOnSuccess',
-												name: value.name,
-												location: value.location,
-												source: sourceAfterResolvedModels,
-												sourceBrut: resolvedValue.sourceBrut,
-												dictionnary: resolvedDictionnary,
-												values: values
-											})
-										},(reason)=>{
-											panel.webview.postMessage({
-												command: 'loadSkeletonOnError',
-												error: reason,
-												log: dumpLog()
-											})
-											return
-										})
-									},(reason)=>{
-										panel.webview.postMessage({
-											command: 'loadSkeletonOnError',
-											error: reason,
-											log: dumpLog()
-										})
-										return
-									})
-								},(reason)=>{
-									panel.webview.postMessage({
-										command: 'loadSkeletonOnError',
-										error: reason,
-										log: dumpLog()
-									})
-									return
-								})
-							} catch(error) {
-								log(`onDidReceiveMessage - loadSkeleton - anomalie détectée`)
-								log(`==> erreur : ${error}`)
-								panel.webview.postMessage({
-									command: 'loadSkeletonOnError',
-									error: `le squelette demandé est invalide, il contient des erreurs`,
-									log: dumpLog()
-								})
-								return
-							}
-						}
-						break
-					case 'resolveSkeleton':
-						{
-							try {
-								panel.webview.postMessage({
-									command: 'resolveSkeletonOnSuccess',
-									name: message.skeleton,
-									resolvedSkeleton : skeleton.resolveSkeleton(message.name, message.source, message.encodedVars, message.analyzeResult)
-								})
-							} catch(error) {
-								vscode.window.showErrorMessage(`La génération a échouée`)
-								panel.webview.postMessage({
-									command: 'resolveSkeletonOnError',
-									error: 
-										`plantage de la génération en ligne ${skeleton.nfoCurrentIndex+1}\n\n`+
-										`- détail de la ligne -------------------------------------------------\n`+
-										`${skeleton.nfoCurrentLine}\n`+
-										`----------------------------------------------------------------------\n\n`+
-										`- détail de l'erreur -------------------------------------------------\n`+
-										`${error.toString()}`
-								})
-							}
-						}
-						break
-					case 'editGeneratedCodeInNewEditor':
-						{
-							try {
-								vscode.workspace.workspaceFolders!==undefined ? vscode.workspace.workspaceFolders[0].uri.path : ''
-								vscode.workspace.openTextDocument(vscode.Uri.parse('untitled:temp.cbl'))
-								.then((td:vscode.TextDocument) => {
-									vscode.window.showTextDocument(td,vscode.ViewColumn.Beside,true)
-									.then((te:vscode.TextEditor) => te.edit( ted => {
-										const doc = te.document
-										const startPos = new vscode.Position(0,0)
-										const lastLine = doc.lineAt(doc.lineCount-1)
-										const endPos = lastLine.range.end
-										const entireRage = new vscode.Range(startPos,endPos)
-										ted.replace(new vscode.Selection(startPos,endPos),message.generatedCode.join('\n'))
-									}))
-								})
-							} catch(error) {
-								vscode.window.showErrorMessage(error)
-							}
-						}
-						break
-					case 'variableChangePropagation':
-						{
-							try {
-								skeleton.resolveParametricOptions(message.dictionnary,undefined,skeleton.getServices(message.source),message.variable,message.value)
-								.then(resolve=>{
-									panel.webview.postMessage({
-										command: 'afterVariableChanged',
-										name: message.name,
-										source: message.source,
-										dictionnary: message.dictionnary,
-										values: skeleton.varsToValues(message.dictionnary)	
-									})
-								})
-							} catch(error) {
-								vscode.window.showErrorMessage(error)
-							}
-						}
+					
+				case 'loadSkeleton':
+
+					let value = { 
+						name:message.skeleton, 
+						location:configuration.skeletonLocations 
+					}
+					skeleton.extendDictionnaryWithIncludes(value.location,value.name)
+					.then( async(resolvedValue)=> {
+						let source = resolvedValue.sourceLines.join('\n')
+						let services = skeleton.getServices(source)
+						let dico = message.values!==undefined
+							? skeleton.extendDictionnaryWithPolymorphicValuesRepresentation(resolvedValue.dictionnary,message.values)
+							: resolvedValue.dictionnary
+						let resolvedDictionnary = await skeleton.resolveParametricOptions(dico,undefined,services)
+						let sourceAfterResolvedModels = await skeleton.resolveModels(source)
+						let values = message.values!==undefined 
+							? skeleton.extractValues(resolvedValue.dictionnary,message.values)
+							: skeleton.generateValuesFromDictionnary(resolvedValue.dictionnary)
+						panel.webview.postMessage({
+							command:'loadSkeletonOnSuccess',
+							name: value.name,
+							location: value.location,
+							source: sourceAfterResolvedModels,
+							sourceBrut: resolvedValue.sourceBrut,
+							dictionnary: resolvedDictionnary,
+							values: values
+						})
+					})
+					.catch((error)=>{
+						panel.webview.postMessage({
+							command: 'loadSkeletonOnError',
+							error: error
+						})
+					})
+					break
+
+				case 'resolveSkeleton':
+
+					try {
+						panel.webview.postMessage({
+							command: 'resolveSkeletonOnSuccess',
+							name: message.skeleton,
+							resolvedSkeleton : skeleton.resolveSkeleton(message.name, message.source, message.encodedVars, message.analyzeResult)
+						})
+					} catch(error) {
+						vscode.window.showErrorMessage(`La génération a échouée`)
+						panel.webview.postMessage({
+							command: 'resolveSkeletonOnError',
+							error: 
+								`plantage de la génération en ligne ${skeleton.nfoCurrentIndex+1}\n\n`+
+								`- détail de la ligne -------------------------------------------------\n`+
+								`${skeleton.nfoCurrentLine}\n`+
+								`----------------------------------------------------------------------\n\n`+
+								`- détail de l'erreur -------------------------------------------------\n`+
+								`${error.toString()}`
+						})
+					}
+					break
+
+				case 'editGeneratedCodeInNewEditor':
+
+					try {
+						vscode.workspace.workspaceFolders!==undefined ? vscode.workspace.workspaceFolders[0].uri.path : ''
+						vscode.workspace.openTextDocument(vscode.Uri.parse('untitled:temp.cbl'))
+						.then((td:vscode.TextDocument) => {
+							vscode.window.showTextDocument(td,vscode.ViewColumn.Beside,true)
+							.then((te:vscode.TextEditor) => te.edit( ted => {
+								const doc = te.document
+								const startPos = new vscode.Position(0,0)
+								const lastLine = doc.lineAt(doc.lineCount-1)
+								const endPos = lastLine.range.end
+								const entireRage = new vscode.Range(startPos,endPos)
+								ted.replace(new vscode.Selection(startPos,endPos),message.generatedCode.join('\n'))
+							}))
+						})
+					} catch(error) {
+						vscode.window.showErrorMessage(error)
+					}
+					break
+
+				case 'variableChangePropagation':
+
+					skeleton.resolveParametricOptions(message.dictionnary,undefined,skeleton.getServices(message.source),message.variable,message.value)
+					.then(resolve=>{
+						panel.webview.postMessage({
+							command: 'afterVariableChanged',
+							name: message.name,
+							source: message.source,
+							dictionnary: message.dictionnary,
+							values: skeleton.varsToValues(message.dictionnary)	
+						})
+					})
+					.catch((error)=>{
+						vscode.window.showErrorMessage(error)
+					})
+					break
+
 				}
 			},
 			undefined,
