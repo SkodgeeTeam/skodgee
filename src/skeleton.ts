@@ -1031,7 +1031,7 @@ export function extractDictionnary(sourcCode:string):string[]|undefined {
     return res
 }
 
-export function extractPathsAndValues(vars:valorizedDictionnary,currentPath=''):any[] {
+function extractPathsAndValues(vars:valorizedDictionnary,currentPath=''):any[] {
     let res:any[] = [];
     (vars as Array<any>).forEach(v => {
         if(v.var!==undefined) {
@@ -1051,7 +1051,7 @@ export function extractPathsAndValues(vars:valorizedDictionnary,currentPath=''):
     return res
 }
 
-export function serializePathsAndValues(pathsAndValues:any[]):any[] {
+function serializePathsAndValues(pathsAndValues:any[]):any[] {
     return pathsAndValues.reduce((acc,val,ind,arr)=>{
         if(!Array.isArray(val)) {
             if(!Array.isArray(val.value)) acc.push({path:val.path,value:val.value})
@@ -1063,7 +1063,7 @@ export function serializePathsAndValues(pathsAndValues:any[]):any[] {
     },[])
 }
 
-export function populateDictionnary(dictionnary:dictionnary,pathsAndValues:pathAndValueObject[],currentPath='') {
+function populateDictionnary(dictionnary:dictionnary,pathsAndValues:pathAndValueObject[],currentPath='') {
     let res:any[] = [];
     (dictionnary as Array<any>).forEach((v:any)=>{
         if(v.var!==undefined) {
@@ -1268,7 +1268,7 @@ export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
     return values
 }
 
-export function variableChanged(variable:string,value:any):any {
+function variableChanged(variable:string,value:any):any {
     return []
 }
 
@@ -1439,7 +1439,7 @@ export async function resolveParametricOptions( dictionnary:valorizedDictionnary
     return dictionnary
 }
 
-export function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorizedDictionnary):valorizedDictionnary {
+function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorizedDictionnary):valorizedDictionnary {
     let d=0
     while(true) {
         if(d>=dictionnary.length) break

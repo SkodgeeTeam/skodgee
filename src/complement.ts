@@ -220,6 +220,7 @@ export function service(request:any):Promise<any> {
  * @returns 
  */
 export function extractDotPath(dotPath:string,object:any) {
+    if(dotPath===".") return object
     let inArray = false
     let finalExtract = false
     return dotPath.split('.').reduce((acc,v,i,o)=>{ 
@@ -234,10 +235,10 @@ export function extractDotPath(dotPath:string,object:any) {
         let search
         if((search = /(\w+)\[\]/.exec(v)) !== null ) {
             inArray = true
-            return acc[search[1]]
+            return Array.isArray(acc[search[1]]) ? acc[search[1]] : undefined
         }
         if((search = /(\w+)\[(\d+)\]/.exec(v)) !== null ) {
-            return acc[search[1]][parseInt(search[2])]
+            return Array.isArray(acc[search[1]]) ? acc[search[1]][parseInt(search[2])] : undefined
         }
         if((search = /\[\]/.exec(v)) !== null ) {
             inArray = true

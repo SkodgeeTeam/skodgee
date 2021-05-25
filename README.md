@@ -256,22 +256,28 @@ Les champs `"rpt"` et `"include"` ne peuvent pas non plus être présents au mê
 
 #### 🡆 Appels de service - notion de path json
 
-Dans la documentation des services on utilise le terme `pathJson` ; cela correspond à un chemin
+Dans la documentation des appels de services on utilise le terme `pathJson` ; cela correspond à un chemin
 utilisant la notation avec point pour désigner une propriété, un objet ou un tableau contenu dans un
 objet JSON. Dans les appels de service, la notation a été étendue pour couvrir des cas particuliers
 que l'on peut rencontrer, comme par exemple la récupération de toutes les occurrences d'une seule
 propriété d'un tableau d'objet.
 
-| Notation                        | Standard | Récupère                   |
-|:--------------------------------|:--------:|:---------------------------|
-| `object.property`               | oui      | propriété d'un objet       |
-| `object.object.property`        | oui      | propriété d'un sous-objet  |
-| `object.array[].property`       | non      | tableau pour une propriété |
-| `object.array`                  | oui      | tableau                    |
-| `object.array[number].property` | oui      | propriété d'une occurrence |
-| `object.property[number]`       | oui      | propriété d'une occurrence |
-| `[].property`                   | non      | tableau pour une propriété |
-| `[index].property`              | non      | propriété d'une occurrence |
+| Notation                        | Standard | Récupère de l'objet reçu                                                                                     |
+|:--------------------------------|:--------:|:-------------------------------------------------------------------------------------------------------------|
+|                                 | non      | `undefined`                                                                                                  |
+| `.`                             | non      | l'objet reçu                                                                                                 |
+| `[]`                            | non      | l'objet reçu si c'est un tableau sinon `undefined`                                                           |
+| `property`                      | oui      | une propriété                                                                                                |
+| `object`                        | oui      | un objet ou un tableau d'objet                                                                               |
+| `object[]`                      | non      | toutes les occurrences de l'objet si c'est un tableau sinon `undefined`                                      |
+| `object.property`               | oui      | une propriété de l'objet si l'objet n'est pas un tableau sinon `undefined`                                   |
+| `object.object`                 | oui      | un sous-objet ou un tableau du sous-objet si c'est un tableau                                                |
+| `object[].property`             | non      | un tableau de toutes les occurrences d'une propriété de l'objet si l'objet est un tableau sinon `undefined`  |
+| `object.object[]`               | non      | toutes les occurrences du sous-objet si c'est un tableau sinon `undefined`                                   |
+| `object[index]`                 | oui      | la `index`+1 ième occurrence si c'est un tableau sinon `undefined`                                           |
+| `object[index].property`        | oui      | une propriété de la `index`+1 ième occurrence de l'objet                                                     |
+| `[].property`                   | non      | tableau pour une propriété                                                                                   |
+| `[index].property`              | non      | la `index`+1 ième occurrence de la propriété                                                                 |
 
 Ces notations sont mixables.
 

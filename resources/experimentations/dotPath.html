@@ -2,6 +2,7 @@
     <body></body>
     <script>
 function extractDotPath(dotPath,object) {
+    if(dotPath===".") return object
     let inArray = false
     let finalExtract = false
     return dotPath.split('.').reduce((acc,v,i,o)=>{ 
@@ -10,23 +11,23 @@ function extractDotPath(dotPath,object) {
         if(inArray===true) {
             finalExtract = true
             let dp = o.slice(i-o.length).join('.')
-            let r = acc.map(e => extractDotPath(dp,e)) 
+            let r = acc.map((e) => extractDotPath(dp,e)) 
             return r
         }
         let search
         if((search = /(\w+)\[\]/.exec(v)) !== null ) {
             inArray = true
-            return acc[search[1]]
+            return Array.isArray(acc[search[1]]) ? acc[search[1]] : undefined
         }
         if((search = /(\w+)\[(\d+)\]/.exec(v)) !== null ) {
-            return acc[search[1]][search[2]]
+            return Array.isArray(acc[search[1]]) ? acc[search[1]][parseInt(search[2])] : undefined
         }
         if((search = /\[\]/.exec(v)) !== null ) {
             inArray = true
             return Array.isArray(acc) ? acc : undefined
         }
         if((search = /\[(\d+)\]/.exec(v)) !== null ) {
-            return Array.isArray(acc) ? acc[search[1]] : undefined
+            return Array.isArray(acc) ? acc[parseInt(search[1])] : undefined
         }
         return acc[v]
     },object)
@@ -38,24 +39,50 @@ function doit(p,o) {
 
 obj = { a:{ b:{ c:84, d:14 }, c:{ d:8 }, r:[{ u:21, v:654 }, { u:84, v:64 }] } }
 
-
 doit("a.b.c",obj)
 doit("a.c.d",obj)
 doit("a.b",obj)
+doit("a.b[]",obj)
+doit("a.b[].c",obj)
 doit("a.b.k",obj)
 doit("a.j.t",obj)
 doit("a.r",obj)
+doit("a.r[]",obj)
+doit("a.r.u",obj)
+doit("a.r.u[1]",obj)
 doit("a.r[].u",obj)
 doit("a.r[1]",obj)
 doit("a.r[1].u",obj)
+doit("",obj)
+doit(".",obj)
 doit("[]",obj)
 
 obj = [ {a:71,b:62}, {a:11,b:212}, {a:541,b:2}, {a:164,b:2456}, {a:12,b:284} ]
 
+doit("",obj)
+doit(".",obj)
 doit("[]",obj)
 doit("[1]",obj)
 doit("[3].b",obj)
 doit("[].b",obj)
+
+obj = [ {a:[71,25,12],b:62}, {a:[84,32,541,11],b:212}, {a:[21,36,84,125,541],b:2}, {a:164,b:2456}, {a:[12],b:284} ]
+
+doit(".",obj)
+doit("[]",obj)
+doit("[].a",obj)
+
+obj = [ 
+    {a:[71,25,12],b:[ {c:71,d:62}, {c:11,d:212} ]},
+    {a:[84,32,541,11],b:[]},
+    {a:[21,36,84,125,541],b:[ {c:64,d:27}, {c:88,d:24} ]}
+]
+
+doit(".",obj)
+doit("[]",obj)
+doit("[].a",obj)
+doit("[].b[].d",obj)
+
 
 </script>
 </html>
