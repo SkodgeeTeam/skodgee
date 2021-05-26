@@ -1,0 +1,74 @@
+<html>
+    <body>
+
+    </body>
+    <script>
+
+    function pathFromCompact(values,dictionnary,path='') {
+        let result = []
+        values.forEach((v,i)=>{
+            let d = dictionnary[i]
+            if(Array.isArray(v)) {
+                if(d.grp===undefined) throw `valeur ${JSON.stringify(v)} non compatible avec dico ${JSON.stringify(d)}`
+                v.forEach((vu,index)=>{
+                    result = [...result,...pathFromCompact(vu,d.cmp,`${path}${path!==''?'>':''}${d.grp}[${index}]`)]
+                })
+            }
+            else {
+                if(d.var===undefined) throw `valeur ${JSON.stringify(v)} non compatible avec dico ${JSON.stringify(d)}`
+                result.push({
+                    path: `${path}${path!==''?'>':''}${d.var}`,
+                    val: v
+                })
+            }
+        })
+        return result
+    }
+
+    function doit(values,dictionnary) {
+        console.log(values,dictionnary,pathFromCompact(values,dictionnary))
+    }
+
+    doit(
+        ["A1", "B2", "C3", [["D4", "E5"], ["D6", "E7"]]],
+        [
+            { "var": "A", "lib": "variable A" },
+            { "var": "B", "lib": "variable B" },
+            { "var": "C", "lib": "variable C" },
+            { 
+                "grp": "G1", "lib": "group G1", "rpt": "0,3", 
+                "cmp": [
+                    { "var": "D", "lib": "variable D" },
+                    { "var": "E", "lib": "variable E" }
+                ] 
+            }
+        ]
+    )
+
+    doit(
+        ["A1", "B2", "C3", [["D4", [["F5","G6"],["F7","G8"]], "E9"], ["D10", [], "E11"], ["D12", [["F13","G14"]], "E15"]]],
+        [
+            { "var": "A", "lib": "variable A" },
+            { "var": "B", "lib": "variable B" },
+            { "var": "C", "lib": "variable C" },
+            { 
+                "grp": "G1", "lib": "group G1", "rpt": "0,3", 
+                "cmp": [
+                    { "var": "D", "lib": "variable D" },
+                    { 
+                        "grp": "G2", "lib": "group G2", "rpt": "0,2", 
+                        "cmp": [
+                            { "var": "F", "lib": "variable D" },
+                            { "var": "G", "lib": "variable E" }
+                        ] 
+                    },
+                    { "var": "E", "lib": "variable E" }
+                ] 
+            }
+        ]
+    )
+
+
+
+    </script>
+</html>

@@ -132,7 +132,7 @@ export async function activate(context: vscode.ExtensionContext) {
 						let source = resolvedValue.sourceLines.join('\n')
 						let services = skeleton.getServices(source)
 						let dico = message.values!==undefined
-							? skeleton.extendDictionnaryWithPolymorphicValuesRepresentation(resolvedValue.dictionnary,message.values)
+							? skeleton.populateDictionnaryWithValues(resolvedValue.dictionnary,message.values)
 							: resolvedValue.dictionnary
 						let resolvedDictionnary = await skeleton.resolveParametricOptions(dico,undefined,services)
 						let sourceAfterResolvedModels = await skeleton.resolveModels(source)
@@ -207,8 +207,6 @@ export async function activate(context: vscode.ExtensionContext) {
 					.then(resolve=>{
 						panel.webview.postMessage({
 							command: 'afterVariableChanged',
-							name: message.name,
-							source: message.source,
 							dictionnary: message.dictionnary,
 							values: skeleton.varsToValues(message.dictionnary)	
 						})

@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.1.1] - 2021-05-27
+
+- Levée de limitaion sur la profondeur des données récupérées lors de l'injection d'un dictionnaire
+(concerne uniquement les documents qui embarquent un dictionnaire au format compact lors de
+l'appel de la fonctionnalité "SKodgee - revenir au squelette").
+- Refonte du code pour un meilleur maintenabilité.
+
 ## [0.1.0] - 2021-05-24
 
 - Ajout de capacités de déclaration et d'utilisation de webapi dans les squelettes.

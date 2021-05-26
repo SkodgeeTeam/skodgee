@@ -1,6 +1,5 @@
 import * as complement from './complement'
 import * as path from 'path'
-import { Url } from 'node:url'
 
 interface keyval {
     key: string,
@@ -58,10 +57,9 @@ interface groupObject {
 type dictionnary = (variableObject|groupObject) []
 
 interface valorizedGroupObject extends groupObject {
-    occurrence?: (valorizedGroupObject|valorizedVariableObject)[]
+    occurrences?: (valorizedGroupObject|valorizedVariableObject)[]
 }
 
-//export type valorizedDictionnary = valorizedVariableObject[] | valorizedGroupObject[]
 export type valorizedDictionnary = (valorizedVariableObject|valorizedGroupObject)[]
 
 type values = (string|values)[]
@@ -638,12 +636,31 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
     return sourceCode
 }
 
+/**
+ * Ajoute aux données fournies le nom du squelette et la date
+ * et retourne une chaine json qui les contient
+ * (mise en forme utilisée pour un vidage du dictionnaire dans le document généré)
+ * @param skeletonName 
+ * @param data 
+ * @returns 
+ */
 function docWith(skeletonName:string,data:any):string {
     return JSON.stringify({
         sn:skeletonName, dt:new Date().toISOString(), data:data
     })
 }
 
+/**
+ * Résoud les variables présentent dans un unique ligne de code
+ * (les appels de variables {{}} sont remplacées par leur valeur)
+ * @param line 
+ * @param vars 
+ * @param forStack 
+ * @param path 
+ * @param sourceIndex 
+ * @param skeletonName 
+ * @returns 
+ */
 function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, path:string[], sourceIndex:number, skeletonName:string) {
     let search:any
     while((search = RGXgenericVars.exec(line)) !==null) {
@@ -663,6 +680,12 @@ function resolveLine(line:string, vars:valorizedDictionnary, forStack:forStack, 
     return line
 }
 
+/**
+ * Extrait les valeurs stockées dans un dictionnaire
+ * Le résultat obtenu est au format compact
+ * @param vars 
+ * @returns 
+ */
 export function varsToValues(vars:valorizedDictionnary):values {
     let res:any[] = []
     vars.forEach((v:any) => {
@@ -682,6 +705,15 @@ export function varsToValues(vars:valorizedDictionnary):values {
     return res
 }
 
+/**
+ * Résoud une condition rattachée à une directive if
+ * @param variable 
+ * @param relation 
+ * @param versus 
+ * @param vars 
+ * @param forStack 
+ * @returns 
+ */
 function ifSolve(variable:any, relation:string, versus:any, vars:valorizedDictionnary, forStack:forStack):boolean {
     let res = false
     let v = varSolve(variable,vars,forStack,vars)
@@ -706,14 +738,38 @@ function ifSolve(variable:any, relation:string, versus:any, vars:valorizedDictio
     return res
 }
 
+/**
+ * Résoud une varianle attachée à une directive for
+ * @param variable 
+ * @param vars 
+ * @param forStack 
+ * @returns 
+ */
 function forSolve(variable:any, vars:valorizedDictionnary, forStack:forStack):any {
     return varSolve(variable,vars,forStack,vars)
 }
 
+/**
+ * Résoud une variable attachée à une directive repeat
+ * @param variable 
+ * @param vars 
+ * @param forStack 
+ * @returns 
+ */
 function repeatSolve(variable:any,vars:valorizedDictionnary,forStack:forStack):any {
     return varSolve(variable,vars,forStack,vars)
 }
 
+/**
+ * Résoud un variable
+ * @param variable 
+ * @param vars 
+ * @param forStack 
+ * @param globalVars 
+ * @param prefix 
+ * @param prefixCmp 
+ * @returns 
+ */
 function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, globalVars:valorizedDictionnary, prefix:any=undefined,prefixCmp:dictionnary|undefined=undefined):any {
 
     if(globalVars===undefined) globalVars=vars
@@ -993,6 +1049,11 @@ function varSolve(variable:any, vars:valorizedDictionnary, forStack:forStack, gl
 
 }
 
+/**
+ * Extrait le 1er dictionnaire trouvé dans un document généré
+ * @param sourcCode 
+ * @returns 
+ */
 export function extractDictionnary(sourcCode:string):string[]|undefined {
     let lines = sourcCode.split(/\r\n|\n/)
     let search:any
@@ -1031,6 +1092,12 @@ export function extractDictionnary(sourcCode:string):string[]|undefined {
     return res
 }
 
+/**
+ * Extrait les valeurs stockées dans le dictionnaire en un tableau d'objets { path, value }
+ * @param vars 
+ * @param currentPath 
+ * @returns 
+ */
 function extractPathsAndValues(vars:valorizedDictionnary,currentPath=''):any[] {
     let res:any[] = [];
     (vars as Array<any>).forEach(v => {
@@ -1051,6 +1118,11 @@ function extractPathsAndValues(vars:valorizedDictionnary,currentPath=''):any[] {
     return res
 }
 
+/**
+ * Transforme un tableau d'objets { path, value } en la représentaion des valeurs en notation serialize
+ * @param pathsAndValues 
+ * @returns 
+ */
 function serializePathsAndValues(pathsAndValues:any[]):any[] {
     return pathsAndValues.reduce((acc,val,ind,arr)=>{
         if(!Array.isArray(val)) {
@@ -1063,17 +1135,26 @@ function serializePathsAndValues(pathsAndValues:any[]):any[] {
     },[])
 }
 
+/**
+ * Peuple un dictionnaire à partir des valeurs passées sous la forme d'un tableau d'objets { path, value }
+ * @param dictionnary 
+ * @param pathsAndValues 
+ * @param currentPath 
+ * @returns 
+ */
 function populateDictionnary(dictionnary:dictionnary,pathsAndValues:pathAndValueObject[],currentPath='') {
     let res:any[] = [];
     (dictionnary as Array<any>).forEach((v:any)=>{
         if(v.var!==undefined) {
             let path = currentPath.concat(currentPath===''?'':'>').concat(v.var)
             let f = pathsAndValues.find((p:any)=>p.path===path)
+            let vcopy = { ...v }
             if(f!==undefined) {
-                res.push({var:v.var, lib:v.lib, value:f.value })
+                vcopy.value = f.value
             } else {
-                res.push({var:v.var,lib:v.lib,value:'????????' })
+                vcopy.value = '????????'
             }
+            res.push(vcopy)
         } else if(v.grp!==undefined) {
             let path = currentPath.concat(currentPath===''?'':'>').concat(v.grp)
             let occurrences = []
@@ -1086,6 +1167,11 @@ function populateDictionnary(dictionnary:dictionnary,pathsAndValues:pathAndValue
     return res
 }
 
+/**
+ * Transforme un tableau d'objets { path, value } en la représentaion des valeurs en notation dense
+ * @param pathsAndValues 
+ * @returns 
+ */
 function densePathsAndValues(pathsAndValues:any[]):string[] {
     return pathsAndValues.reduce((acc,val,ind,arr)=>{
         if(!Array.isArray(val)) {
@@ -1098,10 +1184,21 @@ function densePathsAndValues(pathsAndValues:any[]):string[] {
     },[])
 }
 
+/**
+ * Transforme un tableau d'objets { path, value } en la représentaion des valeurs en notation dense
+ * et retourne une chaine qui la contient en entier
+ * @param pathsAndValues 
+ * @returns 
+ */
 function makeDensePathsAndValues(pathsAndValues:any[]):string {
     return densePathsAndValues(pathsAndValues).join('').slice(0,-1)
 }
 
+/**
+ * Produit un listing avec numérotation de ligne
+ * @param text
+ * @returns 
+ */
 function numberLines(text:string) {
     let ts = text.split('\n')
     let zs = '0'.repeat(ts.length.toFixed(0).length)
@@ -1110,6 +1207,17 @@ function numberLines(text:string) {
     return text.split('\n').map((v,i)=>`${f(i+1)} : ${v}`).join('\n')
 }
 
+/**
+ * Résoud les includes
+ * - vérifie l'absence de références circulaires entre includes
+ * - enrichie le dictionnaire avec les déclarations présentes dans les includes
+ * - rempalce les directives include leur code en l'encadrant par les directives path et endpath 
+ * @param skeletonLocations
+ * @param skeletonName 
+ * @param liens 
+ * @param developSkeletonText 
+ * @returns 
+ */
 export async function extendDictionnaryWithIncludes(skeletonLocations:string[],skeletonName:string,liens:any[]=[],developSkeletonText=undefined) {
     // déterminer si l'on est sur le squelette principal ou sur un squelette inclu
     let level0 = liens.length===0 ? true : false
@@ -1173,10 +1281,15 @@ export async function extendDictionnaryWithIncludes(skeletonLocations:string[],s
     }
     // dernier retour (on est sur le squelette principal)
     if(level0===true) return { dictionnary:dictionnary, sourceLines:[...parts.skodgeeLines, ...parts.declareLines, ...bodyLines], sourceBrut:accu }
-    // retour sur un appel récursif (on est sur un squlette appelé par include)
+    // retour sur un appel récursif (on est sur un squelette appelé par include)
     return { dictionnary:dictionnary, sourceLines:bodyLines, sourceBrut:accu }
 }
 
+/**
+ * Extrait entête, dictionnaire et corps d'un squelette
+ * @param skeletonSourceText 
+ * @returns 
+ */
 function extractSkeletonParts(skeletonSourceText:string):any {
     let lines = skeletonSourceText.split('\n')
     let skodgeeLines:string[] = []
@@ -1204,6 +1317,13 @@ function extractSkeletonParts(skeletonSourceText:string):any {
     return { skodgeeLines:skodgeeLines, declareLines:declareLines, bodyLines:bodyLines }
 }
 
+/**
+ * Résoud les appels de modèles en vérifiant 
+ * - l'absence d'imbrication de modèles
+ * - l'existence des modèles appelés
+ * @param skeletonSourceText
+ * @returns 
+ */
 export async function resolveModels(skeletonSourceText:string) {
     let lines = skeletonSourceText.split('\n')
     let resultLines:string[] = []
@@ -1244,6 +1364,11 @@ export async function resolveModels(skeletonSourceText:string) {
     return resultLines.join('\n')
 }
 
+/**
+ * Extrait les valeurs par défaut du dictionnaire
+ * @param dictionnary 
+ * @returns 
+ */
 export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
     let values:any = []
     dictionnary.forEach((d:variableObject|groupObject)=>{
@@ -1268,10 +1393,12 @@ export function generateValuesFromDictionnary(dictionnary:dictionnary):any {
     return values
 }
 
-function variableChanged(variable:string,value:any):any {
-    return []
-}
-
+/**
+ * Appel d'un service (webapi)
+ * Pour la réponse, format REST supposé avec encapsultation dans un array json
+ * @param source 
+ * @returns 
+ */
 export function getServices(source:string) {
     let sourceLines = source.split(/\r\n|\n/)
     let sourceIndex = 0
@@ -1296,7 +1423,12 @@ export function getServices(source:string) {
 }
 
 /**
- * 
+ * Appel les services (webapi) pour l'alimentation des variables du dictionnaire
+ * et propage les valeurs des variables concernées aux variables 
+ * qui en dépendent (résoud les chainages)
+ * Attention pas de détection de cycle, parce qu'ils peuvent être nécessaires
+ * pour l'appel de certains services (exemple?). On laisse javascript gérer
+ * les débordements de la pile d'appel de cette fonction récursive.
  * @param dictionnary 
  * @param fullDictionnary 
  * @param services 
@@ -1439,59 +1571,83 @@ export async function resolveParametricOptions( dictionnary:valorizedDictionnary
     return dictionnary
 }
 
-function extendDictionnary(dictionnary:valorizedDictionnary,dic2:valorizedDictionnary):valorizedDictionnary {
-    let d=0
-    while(true) {
-        if(d>=dictionnary.length) break
-        if((dictionnary[d] as valorizedVariableObject).var!==undefined) {
-            if((dic2[d] as valorizedVariableObject).var!==undefined) {
-                if((dictionnary[d] as valorizedVariableObject).var===(dic2[d] as valorizedVariableObject).var) {
-                    if((dic2[d] as valorizedVariableObject).value!==undefined) {
-                        (dictionnary[d] as valorizedVariableObject).value = (dic2[d] as valorizedVariableObject).value
-                    }
-                }
-            }
-        }
-        d++
-    }
-    return dictionnary
-}
-
-export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation) {
-    return Array.isArray(values) ?
-        values.length>0 ?
-            values[0] instanceof Object ?
-                (values[0] as pathAndValueObject).path!==undefined ?
-                    varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[])) :
-                varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary)))) :
-            values :
-        undefined :
-    undefined
-}
-
-export function extendDictionnaryWithPolymorphicValuesRepresentation(dictionnary:dictionnary,values:polymorphicValuesRepresentation):dictionnary {
-    if(Array.isArray(values)) {
-        if((values as values).every(e=>Array.isArray(e)||(typeof e==='string'))) {
-            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,pathFromCompact(values,dictionnary)))
-        }
-        if((values as valorizedDictionnary).every((e:variableObject|groupObject)=>(e as variableObject).var!==undefined||(e as groupObject).grp!==undefined)) {
-            return extendDictionnary(dictionnary,values as valorizedDictionnary)
-        }
-        if((values as pathAndValueObject[]).every((e:pathAndValueObject)=>(e.path!==undefined&&e.value!==undefined))) {
-            return extendDictionnary(dictionnary,populateDictionnary(dictionnary,values as pathAndValueObject[]))
-        }
-    }
-    return dictionnary
-}
-
+/**
+ * Passe les valeurs fournies du format compact au format serialize
+ * ( recalcul le path pour chaque variable déclarée
+ *   pour refaire le lien avec le dictionnaire
+ *   au risque de ne pas pointer vers la bonne variable
+ *   si le dictionnaire a évolué )
+ * @param values 
+ * @param dictionnary 
+ * @param path 
+ * @returns tableau d'objets { path, value }
+ */
 function pathFromCompact(values:Array<any>,dictionnary:dictionnary,path:string=""):pathAndValueObject[] {
     let result:pathAndValueObject[] = []
-    dictionnary.forEach((d:variableObject|groupObject,i:number)=>{
-        if((d as groupObject).grp!==undefined) {
-            result = [...result,...pathFromCompact(values[i],(d as groupObject).cmp,`${path}${(d as groupObject).grp}[${i}]>`)]
-        } else {
-            result.push({ path:`${path}${(d as variableObject).var}`, value:`${values[i]}` })
+    values.forEach((v,i)=>{
+        let d = dictionnary[i]
+        if(Array.isArray(v)) {
+            if((d as groupObject).grp===undefined) throw `valeur ${JSON.stringify(v)} non compatible avec dico ${JSON.stringify(d)}`
+            v.forEach((vu,index)=>{
+                result = [...result,...pathFromCompact(vu,(d as groupObject).cmp,`${path}${path!==''?'>':''}${(d as groupObject).grp}[${index}]`)]
+            })
+        }
+        else {
+            if((d as variableObject).var===undefined) throw `valeur ${JSON.stringify(v)} non compatible avec dico ${JSON.stringify(d)}`
+            result.push({
+                path: `${path}${path!==''?'>':''}${(d as variableObject).var}`,
+                value: v
+            })
         }
     })
     return result
 }
+
+/**
+ * Passe les valeurs fournies du format compact, dense/serialize ou complet à un format compact
+ * @param dictionnary 
+ * @param values 
+ * @returns 
+ */
+export function extractValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation):values {
+    if(Array.isArray(values)) {
+        if((values as values).every(e=>Array.isArray(e)||(typeof e==='string'))) {
+            // compact
+            return values as values
+        }
+        if((values as valorizedDictionnary).every((e:variableObject|groupObject)=>(e as variableObject).var!==undefined||(e as groupObject).grp!==undefined)) {
+            // complet
+            return varsToValues(populateDictionnary(dictionnary,serializePathsAndValues(extractPathsAndValues(values as valorizedDictionnary))))
+        }
+        if((values as pathAndValueObject[]).every((e:pathAndValueObject)=>(e.path!==undefined&&e.value!==undefined))) {
+            // dense/serialize
+            return varsToValues(populateDictionnary(dictionnary,values as pathAndValueObject[]))
+        }
+    }
+    return values as values
+}
+
+/**
+ * Peuple le dictionnaire avec les valeurs fournies au format compact, dense/serialize ou complet
+ * @param dictionnary 
+ * @param values 
+ * @returns 
+ */
+export function populateDictionnaryWithValues(dictionnary:dictionnary,values:polymorphicValuesRepresentation):dictionnary {
+    if(Array.isArray(values)) {
+        if((values as values).every(e=>Array.isArray(e)||(typeof e==='string'))) {
+            // compact
+            return populateDictionnary(dictionnary,pathFromCompact(values,dictionnary))
+        }
+        if((values as valorizedDictionnary).every((e:variableObject|groupObject)=>(e as variableObject).var!==undefined||(e as groupObject).grp!==undefined)) {
+            // complet
+            return values as valorizedDictionnary
+        }
+        if((values as pathAndValueObject[]).every((e:pathAndValueObject)=>(e.path!==undefined&&e.value!==undefined))) {
+            // dense/serialize
+            return populateDictionnary(dictionnary,values as pathAndValueObject[])
+        }
+    }
+    return dictionnary
+}
+
