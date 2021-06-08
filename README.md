@@ -8,24 +8,34 @@ _**SKodgee Obviously Designed for Generation Enhanced Efficiently**_
 
 ### Qu'est-ce que c'est ?
 
-SKodgee est un outil pour les développeurs de squelettes de code et de document.
-Il permet de générer des ensembles structurés de code ou de texte par la simple
+SKodgee est un outil pour les développeurs et les utilisateurs de squelettes de code et de document.
+
+SKodgee est un ETL particulier ; il permet de collecter les informations nécessaires à la
+transformation directement auprès de l'utilisateur en lui proposant un formulaire de saisie des données.
+
+SKodgee réalise la génération de code et de document par la simple
 application de directives qui utilisent les données structurées fournies par l'utilisateur.
+
+Skodgee apporte au développeur de squelettes une sémantique dédiée et la capacité à tester directement ses
+squelettes.
 
 ### Comment ça marche ?
 
-Trois possibilités pour l'utilisateur :  
+L'utilisateur pourra
 
-- Lancer SKodgee pour générer un nouveau document en choisissant l'un des squelettes
- proposés puis en renseignant les données structurées demandées.  
+- Lancer SKodgee pour **générer un nouveau document** en choisissant l'un des squelettes
+ proposés, renseigner les données structurées qui lui sont demandées puis lancer la génération.  
 - Demander à Skodgee de repartir d'un document pour identifier le squelette,
 récupérer les valeurs des données de génération et automatiquement proposer de refaire une
-nouvelle génération avec possibilité de changer les valeurs.  
-- Tester un squelette en cours de mise au point ou de maintenance.
+nouvelle génération avec possibilité d'en changer les valeurs pour **corriger son document**.
+
+Le développeur de squelette pourra
+
+- **Tester un squelette** en cours de mise au point ou de maintenance.
 
 ### Générer un nouveau document
 
-Depuis la palette de commande appeler "SKodgee - génération à partir d'une sélection de squelettes" pour
+Depuis la palette de commande appeler `"SKodgee - génération à partir d'une sélection de squelettes"` pour
 lancer l'interfaçe utilisateur. Il propose de choisir un squelette et de le charger.
 Un formulaire est alors contruit automatiquement après analyse par Skodgee du squelette choisi.
 
@@ -37,21 +47,10 @@ Quand une génération est réussi, un bouton supplémentaire propose de récup�
 Ceci permet de recopier automatiquement le résultat dans une nouvell onglet d'édition. L'utilisateur
 peut profiter de ce nouvel onglet pour réaliser des opérations de sélection, modification, comparaison...
 
-_**Spécificité du mode développeur**_
-
-Il existe un mode développeur (activable depuis les préférences) pour lequel l'interface montre
-2 panneaux qui permettent de visualiser le squelette et de consulter le dictionnaire qui en a été extrait.
-
-A la gauche du 1er panneau et sur toute sa hauteur est disposé un bouton marqué
-du symbole `|` (pipe ou barre verticale). En cliquant sur ce bouton le développeur peut
-faire basculer alternativement les panneaux pour afficher l'un, l'autre ou les deux en même temps.
-
-Le texte contenu dans chaque panneau peut-être sélectionné et copier.
-
 ### Corriger un document
 
 Si un document généré avec SKodgee contient le dictionnaire qui a permis sa génération⁽¹⁾, alors
-l'utilisateur peut appeler la commande "SKodgee - revenir au squelette" depuis la
+l'utilisateur peut appeler la commande `"SKodgee - revenir au squelette"` depuis la
 palette.
 
 Automatiquement, l'interface utilisateur est affichée avec le formulaire pré-rempli des
@@ -69,9 +68,20 @@ _⁽¹⁾ le squelette doit contenir une directive `dictionnary` valide afin de 
 
 ### Tester un squelette en cours de mise au point
 
-Pour un développeur de squelette, le choix "SKodgee - tester le squelette" permet de lancer l'interface
+Pour un développeur de squelette, le choix `"SKodgee - tester le squelette"` permet de lancer l'interface
 en utilisant le squelette alors même que celui-ci n'est pas enregistré dans la liste des emplacements
 qui ont été paramétrés dans les préférences.
+
+_**Spécificité du mode développeur**_
+
+Il existe un mode développeur (activable depuis les préférences) pour lequel l'interface montre
+2 panneaux qui permettent de visualiser le squelette et de consulter le dictionnaire qui en a été extrait.
+
+A la gauche du 1er panneau et sur toute sa hauteur est disposé un bouton marqué
+du symbole `|` (pipe ou barre verticale). En cliquant sur ce bouton le développeur peut
+faire basculer alternativement les panneaux pour afficher l'un, l'autre ou les deux en même temps.
+
+Le texte contenu dans chaque panneau peut-être sélectionné et copier.
 
 ___
 
