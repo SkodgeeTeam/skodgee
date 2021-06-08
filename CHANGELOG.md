@@ -1,11 +1,17 @@
 # Change Log
 
+## [0.1.2] - 2021-06-08
+
+- Modification de l'apparence des groupes qui ne sont pas répétés dans le formulaire utilisateur. Au lieu d'avoir
+une ligne pour le groupe + une ligne pour la seule occurrence, on a juste une ligne pour le groupe et la mention `(1 seul)` en
+fin de ligne pour bien le distinguer des groupes pouvant contenir plusieurs occurrences.
+
 ## [0.1.1] - 2021-05-27
 
-- Levée de limitaion sur la profondeur des données récupérées lors de l'injection d'un dictionnaire
+- Levée de limitation sur la profondeur des données récupérées lors de l'injection d'un dictionnaire
 (concerne uniquement les documents qui embarquent un dictionnaire au format compact lors de
 l'appel de la fonctionnalité "SKodgee - revenir au squelette").
-- Refonte du code pour un meilleur maintenabilité.
+- Refonte du code pour une meilleur maintenabilité.
 
 ## [0.1.0] - 2021-05-24
 

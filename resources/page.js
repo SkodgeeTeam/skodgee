@@ -369,21 +369,12 @@ generateGroup = (e,parentName=undefined,values=undefined) => {
         plus.addEventListener('click',event => {
             if([...divGroup.children].filter(e=>e.classList.contains('occurrenceContainer')).length<max) {
                 let occ = generateOccurrenceIntoAfter(e,divGroup,undefined,name).lastCreated
-                /*let maxHeight = occ.getBoundingClientRect().height
-                occ.style.setProperty('height','0px')
-                let currentHeight = 0
-                let iv = setInterval(()=>{
-                    occ.style.setProperty('height',`${currentHeight}px`)
-                    if(currentHeight<maxHeight) currentHeight+=3.5
-                },10)
-                setTimeout(()=>{
-                    refreshCounting()
-                    clearInterval(iv)
-                },300)*/
                 refreshCounting()
             }
         })
         divGroupHead.appendChild(plus)
+    } else {
+        divGroupHead.classList.add('groupHeadWithoutRepetition')
     }
 
     let group = generateOccurrenceIntoAfter(e,divGroup,undefined,name,values).group
@@ -479,17 +470,6 @@ generateOccurrenceIntoAfter = (e,div,beforeNode=undefined,parentName,values=unde
         plus.addEventListener('click',event=>{
             if([...div.children].filter(e=>e.classList.contains('occurrenceContainer')).length<max) {
                 let occ = generateOccurrenceIntoAfter(e,div,occContainer,parentName).lastCreated
-                /*let maxHeight = occ.getBoundingClientRect().height
-                occ.style.setProperty('height','0px')
-                let currentHeight = 0
-                let iv = setInterval(()=>{
-                    occ.style.setProperty('height',`${currentHeight}px`)
-                    if(currentHeight<maxHeight) currentHeight+=3.5
-                },10)
-                setTimeout(()=>{
-                    refreshCounting()
-                    clearInterval(iv)
-                },300)*/
                 refreshCounting()
             }
         })
@@ -513,6 +493,8 @@ generateOccurrenceIntoAfter = (e,div,beforeNode=undefined,parentName,values=unde
             }
         })
         appendElements(buttons,[plus,moins])
+    } else {
+        occContainer.classList.add('occurrenceContainerAlone')
     }
 
     occContainer.appendChild(occ)

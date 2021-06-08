@@ -116,13 +116,26 @@ button:focus {
 .groupHead {
     min-width: inherit;
 }
+.groupHeadWithoutRepetition > .number {
+    visibility: hidden;
+}
+.groupHeadWithoutRepetition > .number::after {
+    visibility: visible;
+    content: '(1 seul)';
+    float: right;
+    margin-right: 1em;
+}
+
 .occurrenceContainer {
     padding-left: 0.5em;
     border-left: 1px solid var(--vscode-dropdown-border);
 }
-/*.occurrenceContainer:hover {
-    border-left-color: var(--vscode-tree-indentGuideStroke);
-}*/
+.occurrenceContainerAlone > .status,
+.occurrenceContainerAlone > .title,
+.occurrenceContainerAlone > .number {
+    visibility: hidden;
+    display: none;
+}
 .occurrenceContainerClose :not(.status):not(.title):not(.number):not(.repetition) {
     display: none;
 }
