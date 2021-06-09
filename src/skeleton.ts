@@ -586,7 +586,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
                     lv.value = Function(`"use strict";return (${num})`)()
                 } else {
                     let rl = resolveLine(searchSet[3],vars,forStack,activePath,sourceIndex,skeletonName)
-                    lv.value = rl    
+                    lv.value = Function(`"use strict";return (${rl})`)()  
                 }
             } else {
                 throw(''.concat(
@@ -612,7 +612,7 @@ export function resolveSkeleton(skeletonName:string,source:any,vars:valorizedDic
         while((search = RGXgenericVars.exec(solvedLine)) !==null) {
             let variable = search[1]
             let ap = activePath.join('_')
-            let variableWithPath = ap.concat(ap!==''?'_':'',search[1])
+            let variableWithPath = variable.slice(0,2)==='__' ? variable : ap.concat(ap!==''?'_':'',variable)
             let vs = varSolve(variableWithPath,vars,forStack,vars)
             if(vs.type!=='var' && vs.type!=='str' && vs.type!=='number') {
                 throw(''.concat(
