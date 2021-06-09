@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.3] - 2021-06-09
+
+- Correction sur la manipulation variable déclarée par defnum et defstr ; 1) pour qu'une variable déclarée par defnum et defstr
+soit toujours résolue en dehors de tout path ; 2) pour qu'un calc sur une variable de type string puisse utiliser 
+les fonctions javascripts comme un calc sur une variable numérique.
+
 ## [0.1.2] - 2021-06-08
 
 - Modification de l'apparence des groupes qui ne sont pas répétés dans le formulaire utilisateur. Au lieu d'avoir
