@@ -1,9 +1,15 @@
 # Change Log
 
+## [0.1.4] - 2021-06-10
+
+- La génération est impossible tant qu'il reste au moins un champ de formulaire invalide ; en cliquant sur `Générer le code` on obtient
+un message "Certains champs du formulaire contiennent des valeurs invalides" au lieu du document généré.
+- Un champ de formulaire peut-être rendu obligatoire en déclarant la variable avec l'option required.
+
 ## [0.1.3] - 2021-06-09
 
-- Correction sur la manipulation variable déclarée par defnum et defstr ; 1) pour qu'une variable déclarée par defnum et defstr
-soit toujours résolue en dehors de tout path ; 2) pour qu'un calc sur une variable de type string puisse utiliser 
+- Correction sur la manipulation de variable déclarée par defnum et defstr ; 1) pour qu'une variable déclarée par defnum et defstr
+soit toujours résolue en dehors de tout path ; 2) pour qu'un calc sur une variable de type string puisse utiliser
 les fonctions javascripts comme un calc sur une variable numérique.
 
 ## [0.1.2] - 2021-06-08

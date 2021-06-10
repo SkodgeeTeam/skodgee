@@ -19,9 +19,9 @@
       "placeholder":"·····", "pattern":"\\w{5}" },
     { "var": "D", "lib": "variable D", 
       "description": "choisir la valeur dans la liste",
-      "opt":["1ère valeur","2ème valeur","3ème value"] },
+      "opt":["1ère valeur","2ème valeur","3ème value"], "ini":"1ère valeur" },
     { "var": "E", "lib": "variable E",
-      "description": "choisir une valeur pour récupérer une clé",
+      "description": "choisir une valeur pour récupérer une clé", "ini":"01",
       "keyval": [{"key":"01","val":"uno"},{"key":"02","val":"duos"},{"key":"03","val":"tres"},{"key":"04","val":"quatro"}] }
 # end
 SKoDGee sample

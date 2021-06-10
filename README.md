@@ -36,7 +36,14 @@ Le développeur de squelette pourra
 ### Générer un nouveau document
 
 Depuis la palette de commande appeler `"SKodgee - génération à partir d'une sélection de squelettes"` pour
-lancer l'interfaçe utilisateur. Il propose de choisir un squelette et de le charger.
+lancer l'interfaçe utilisateur.
+
+![SKodgee - génération à partir d'une sélection de squelettes](./resources/documentation/PaletteGeneration.png)
+
+Il propose de choisir un squelette et de le charger.
+
+![choisir et charger un squelette](./resources/documentation/GenerationChoisir.png)
+
 Un formulaire est alors contruit automatiquement après analyse par Skodgee du squelette choisi.
 
 L'utilisateur doit renseigner le formulaire puis demander la génération du code.
@@ -191,6 +198,7 @@ Il existe 2 types d'objets :
         "type": "numeric",
         "pattern": "regex",
         "hidden": "",
+        "required": "",
         "remoteOpt": "url",
         "remoteKeyval": "url",
         "serviceOpt": {
@@ -242,6 +250,7 @@ avec pour un objet variable
 - `"type"` : typage de la variable pour contrôle dans le formulaire, renseigner à `numeric` pour contrôler un nombre⁽¹⁾
 - `"pattern"` : expression régulière pour le contrôle de la validité dans le formulaire (standard pattern html)⁽¹⁾
 - `"hidden"` : la variable n'apparaît pas dans le formulaire de saisie quand `hidden` est présent
+- `"required"` : le champ de formulaire correspondant à la variable doit obligatoirement être renseigné
 - `"remoteOpt"` : url d'une webapi ramement une liste de valeurs possibles pour la variable
 - `"remoteKeyval"` : url d'une webapi ramement une liste de pairs clé valeur pour la variable
 - `"serviceOpt"` : service utilisé pour ramener une liste de valeurs possibles pour la variable

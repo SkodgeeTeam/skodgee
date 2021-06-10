@@ -50,6 +50,12 @@ document.querySelector('#swap').addEventListener('click',e=>{
 
 
 document.querySelector('#generateCode').addEventListener('click',e=>{
+    // anomalie dans le contrôle de formulaire html
+    if([...document.querySelectorAll('#formulaire input,#formulaire select')].some(e=>!e.checkValidity())) {
+        document.querySelector('#expansed').value = `Certains champs du formulaire contiennent des valeurs invalides`
+        return
+    }
+    //
     let res =[]
     document.querySelectorAll('#formulaire input,#formulaire select').forEach( inp => {
         res.push({ var:inp.name, value:inp.value })
@@ -294,6 +300,9 @@ generateInput = (e,parentName=undefined,value=undefined) => {
             }
             if(e.placeholder!==undefined) {
                 input.placeholder = e.placeholder
+            }
+            if(e.required!==undefined) {
+                input.required = true
             }
             /*****************************/
             /***** T E S T - M O D E *****/
